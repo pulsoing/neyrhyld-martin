@@ -37,15 +37,16 @@ async function handleContacto(request, env) {
             }, 400);
         }
 
-        const turnstileValid = await validateTurnstile(
+        const turnstileResult = await validateTurnstile(
             turnstileToken,
             env.TURNSTILE_SECRET_KEY
         );
 
-        if (!turnstileValid) {
+        if (!turnstileResult.success) {
             return jsonResponse({
                 ok: false,
-                message: "No se pudo validar la verificación de seguridad."
+                message: "No se pudo validar la verificación de seguridad.",
+                detail: turnstileResult
             }, 403);
         }
 
@@ -94,8 +95,10 @@ function jsonResponse(data, status = 200) {
 
 async function validateTurnstile(token, secretKey) {
     if (!secretKey) {
-        console.error("TURNSTILE_SECRET_KEY no está configurada.");
-        return false;
+        return {
+            success: false,
+            errorCodes: ["missing-secret-key"]
+        };
     }
 
     const formData = new FormData();
@@ -109,11 +112,14 @@ async function validateTurnstile(token, secretKey) {
 
     const result = await response.json();
 
-    if (!result.success) {
-        console.error("Turnstile inválido:", result);
-    }
+    console.log("Resultado Turnstile:", JSON.stringify(result));
 
-    return result.success === true;
+    return {
+        success: result.success === true,
+        errorCodes: result["error-codes"] || [],
+        hostname: result.hostname || null,
+        action: result.action || null
+    };
 }
 
 async function sendEmailWithResend({
