@@ -63,7 +63,8 @@ async function handleContacto(request, env) {
         if (!emailResult.ok) {
             return jsonResponse({
                 ok: false,
-                message: "No se pudo enviar el correo."
+                message: "No se pudo enviar el correo.",
+                detail: emailResult.error || "Sin detalle"
             }, 500);
         }
 
@@ -179,7 +180,7 @@ ${mensaje}
     if (!response.ok) {
         const errorText = await response.text();
         console.error("Error Resend:", errorText);
-        return { ok: false };
+        return { ok: false, error: errorText };
     }
 
     return { ok: true };
