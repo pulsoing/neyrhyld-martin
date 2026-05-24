@@ -7,7 +7,7 @@
         "binding": "ASSETS"
     },
     "vars": {
-        "FROM_EMAIL": "Neyrhyld Martin <onboarding@resend.dev>",
-        "TO_EMAIL": "neyrhyldmartin.estetica@gmail.com"
+        "FROM_EMAIL": "Neyrhyld Martin <no-reply@send.pulsoing.cl>",
+        "TO_EMAIL": "neyrhyldmartin.estetica@pulsoing.cl"
     }
 }
