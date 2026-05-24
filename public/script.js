@@ -121,7 +121,7 @@ function initContactFormSimulation() {
 
     if (!form || !submitBtn) return;
 
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const nombre = document.getElementById('nombre')?.value.trim();
@@ -130,31 +130,65 @@ function initContactFormSimulation() {
         const servicio = document.getElementById('servicio')?.value;
         const mensaje = document.getElementById('mensaje')?.value.trim();
 
+        const turnstileToken = getTurnstileToken();
+
         if (!nombre || !email || !servicio || !mensaje) {
             alert('Por favor completa los campos obligatorios antes de enviar.');
+            return;
+        }
+
+        if (!turnstileToken) {
+            alert('Por favor completa la verificación de seguridad antes de enviar.');
             return;
         }
 
         submitBtn.innerHTML = 'Enviando... <i class="fas fa-spinner fa-spin"></i>';
         submitBtn.disabled = true;
 
-        const resumenConsulta = {
-            nombre,
-            email,
-            telefono,
-            servicio,
-            mensaje
-        };
+        try {
+            const response = await fetch('/api/contacto', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    nombre,
+                    email,
+                    telefono,
+                    servicio,
+                    mensaje,
+                    turnstileToken
+                })
+            });
 
-        console.log('Consulta simulada:', resumenConsulta);
+            const result = await response.json();
 
-        setTimeout(() => {
-            alert('✅ Consulta registrada correctamente. Pronto nos pondremos en contacto contigo.');
+            if (!response.ok || !result.ok) {
+                throw new Error(result.message || 'No se pudo enviar la consulta.');
+            }
+
+            alert('✅ Consulta enviada correctamente. Pronto nos pondremos en contacto contigo.');
 
             form.reset();
+            resetTurnstile();
 
+        } catch (error) {
+            console.error('Error al enviar consulta:', error);
+            alert('❌ No se pudo enviar la consulta. Intenta nuevamente o contáctanos por WhatsApp.');
+        } finally {
             submitBtn.innerHTML = 'Enviar Consulta <i class="fas fa-paper-plane"></i>';
             submitBtn.disabled = false;
-        }, 1200);
+        }
     });
+}
+
+function getTurnstileToken() {
+    const tokenInput = document.querySelector('[name="cf-turnstile-response"]');
+    return tokenInput ? tokenInput.value : '';
+}
+
+function resetTurnstile() {
+    if (typeof turnstile !== 'undefined') {
+        turnstile.reset();
+    }
 }
