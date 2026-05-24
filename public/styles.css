@@ -752,6 +752,18 @@ section {
 }
 
 /* =========================================================
+   TURNSTILE
+   ========================================================= */
+
+.cf-turnstile {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 1.5rem auto;
+    width: 100%;
+}
+
+/* =========================================================
    FOOTER
    ========================================================= */
 
@@ -981,6 +993,11 @@ section {
         flex-direction: column;
         text-align: center;
         align-items: center;
+    }
+
+    .cf-turnstile {
+        transform: scale(0.92);
+        transform-origin: center;
     }
 
     .footer {
