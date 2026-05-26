@@ -51,16 +51,12 @@
 
             <p id="authStatus">Validando sesión...</p>
 
-            <div id="reservasContent" style="display: none;">
-                <p>
-                    Aquí mostraremos el calendario con las horas disponibles para reservar.
-                </p>
+            <p>
+                Selecciona una hora disponible para revisar tu próxima reserva.
+            </p>
 
-                <div class="empty-state">
-                    <i class="fas fa-calendar-alt"></i>
-                    <h2>Calendario de reservas</h2>
-                    <p>Próxima etapa: cargar horas disponibles desde Firestore.</p>
-                </div>
+            <div id="availableSlotsList" class="available-slots-list">
+                <p>Cargando horas disponibles...</p>
             </div>
         </section>
     </main>
