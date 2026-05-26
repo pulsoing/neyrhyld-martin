@@ -83,8 +83,11 @@ async function loginWithGoogle() {
         const result = await signInWithPopup(auth, provider);
         await createOrUpdateUserProfile(result.user);
     } catch (error) {
-        console.error("Error login Google:", error);
-        alert("No se pudo iniciar sesión con Google. Intenta nuevamente.");
+        console.error("Error login Google completo:", error);
+        console.error("Código:", error.code);
+        console.error("Mensaje:", error.message);
+
+        alert(`No se pudo iniciar sesión con Google.\n\nCódigo: ${error.code || 'sin código'}\nMensaje: ${error.message || 'sin mensaje'}`);
     }
 }
 
