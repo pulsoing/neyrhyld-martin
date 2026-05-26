@@ -43,7 +43,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         authStatus.textContent = `Bienvenido/a, ${user.displayName || user.email}`;
-        reservasContent.style.display = "block";
+
+        if (reservasContent) {
+            reservasContent.style.display = "block";
+        }
 
         listenAvailableSlots();
     });
