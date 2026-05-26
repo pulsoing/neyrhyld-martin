@@ -62,6 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         initAvailabilityForm();
         listenAvailability();
+        listenReservations();
     });
 });
 
@@ -153,6 +154,51 @@ function listenAvailability() {
     });
 }
 
+function listenReservations() {
+    const list = document.getElementById("reservationsList");
+
+    if (!list) return;
+
+    const reservationsQuery = query(
+        collection(db, "reservations"),
+        orderBy("fecha", "asc"),
+        orderBy("horaInicio", "asc")
+    );
+
+    onSnapshot(reservationsQuery, (snapshot) => {
+        if (snapshot.empty) {
+            list.innerHTML = "<p>No hay horas reservadas.</p>";
+            return;
+        }
+
+        list.innerHTML = "";
+
+        snapshot.forEach((docSnap) => {
+            const reservation = docSnap.data();
+
+            const item = document.createElement("div");
+            item.className = "reservation-item";
+
+            item.innerHTML = `
+                <div>
+                    <strong>${formatDate(reservation.fecha)}</strong>
+                    <p>${reservation.horaInicio} - ${reservation.horaFin}</p>
+                    <p><strong>Servicio:</strong> ${reservation.servicio}</p>
+                    <p><strong>Cliente:</strong> ${reservation.userName || "No informado"}</p>
+                    <p><strong>Email:</strong> ${reservation.userEmail || "No informado"}</p>
+                </div>
+
+                <span class="status-pill reserved">Reservada</span>
+            `;
+
+            list.appendChild(item);
+        });
+
+    }, (error) => {
+        console.error("Error leyendo reservas:", error);
+        list.innerHTML = "<p>No se pudieron cargar las reservas.</p>";
+    });
+}
 function showMessage(element, text, type) {
     if (!element) return;
 
