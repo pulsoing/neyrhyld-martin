@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservas | Neyrhyld Martin</title>
+
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <a href="index.html" class="logo-link" aria-label="Inicio Neyrhyld Martin">
+                        <img src="assets/logo_neymartin_estetica.png"
+                            alt="Neyrhyld Martin Cosmetología y Estética Integrativa" class="logo-img">
+
+                        <div class="brand-text">
+                            <span class="brand-name">Neyrhyld Martin</span>
+                            <span class="brand-subtitle">Estética Integrativa</span>
+                        </div>
+                    </a>
+                </div>
+
+                <ul class="nav-menu">
+                    <li><a href="index.html">Inicio</a></li>
+                    <li><a href="login.html">Mi cuenta</a></li>
+                </ul>
+
+                <div class="hamburger" aria-label="Abrir menú de navegación">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="panel-page">
+        <section class="panel-card">
+            <p class="section-kicker">Reservas Online</p>
+            <h1>Horas disponibles</h1>
+
+            <p id="authStatus">Validando sesión...</p>
+
+            <div id="reservasContent" style="display: none;">
+                <p>
+                    Aquí mostraremos el calendario con las horas disponibles para reservar.
+                </p>
+
+                <div class="empty-state">
+                    <i class="fas fa-calendar-alt"></i>
+                    <h2>Calendario de reservas</h2>
+                    <p>Próxima etapa: cargar horas disponibles desde Firestore.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+    <script type="module" src="reservas.js"></script>
+
+</body>
+
+</html>

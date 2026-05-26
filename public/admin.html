@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administración | Neyrhyld Martin</title>
+
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <a href="index.html" class="logo-link" aria-label="Inicio Neyrhyld Martin">
+                        <img src="assets/logo_neymartin_estetica.png"
+                            alt="Neyrhyld Martin Cosmetología y Estética Integrativa" class="logo-img">
+
+                        <div class="brand-text">
+                            <span class="brand-name">Neyrhyld Martin</span>
+                            <span class="brand-subtitle">Estética Integrativa</span>
+                        </div>
+                    </a>
+                </div>
+
+                <ul class="nav-menu">
+                    <li><a href="index.html">Inicio</a></li>
+                    <li><a href="login.html">Mi cuenta</a></li>
+                    <li><a href="reservas.html">Reservas</a></li>
+                </ul>
+
+                <div class="hamburger" aria-label="Abrir menú de navegación">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="panel-page">
+        <section class="panel-card">
+            <p class="section-kicker">Panel Administrativo</p>
+            <h1>Gestión de reservas</h1>
+
+            <p id="authStatus">Validando permisos...</p>
+
+            <div id="adminContent" style="display: none;">
+                <p>
+                    Aquí administraremos horas disponibles, reservas y clientes registrados.
+                </p>
+
+                <div class="admin-grid">
+                    <div class="empty-state">
+                        <i class="fas fa-clock"></i>
+                        <h2>Horas disponibles</h2>
+                        <p>Próxima etapa: crear disponibilidad semanal.</p>
+                    </div>
+
+                    <div class="empty-state">
+                        <i class="fas fa-users"></i>
+                        <h2>Clientes registrados</h2>
+                        <p>Próxima etapa: listar usuarios desde Firestore.</p>
+                    </div>
+
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-check"></i>
+                        <h2>Reservas</h2>
+                        <p>Próxima etapa: visualizar horas reservadas.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+    <script type="module" src="admin.js"></script>
+
+</body>
+
+</html>
