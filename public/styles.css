@@ -1027,3 +1027,83 @@ section {
 #submitBtn:disabled i {
     animation: spin 1s linear infinite;
 }
+
+/* =========================================================
+   AUTH / LOGIN
+   ========================================================= */
+
+.auth-page {
+    min-height: 100vh;
+    padding: 140px 1rem 70px;
+    background:
+        linear-gradient(rgba(63, 53, 47, 0.35), rgba(63, 53, 47, 0.35)),
+        url("assets/amor_propio.jpg");
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 620px;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-hover);
+    padding: 3rem;
+    text-align: center;
+}
+
+.auth-card h1 {
+    font-family: var(--font-title);
+    font-size: clamp(2rem, 4vw, 3rem);
+    color: var(--color-text);
+    margin-bottom: 1rem;
+}
+
+.auth-card p {
+    color: var(--color-text-light);
+    margin-bottom: 1.5rem;
+}
+
+.auth-google-btn {
+    margin-top: 1rem;
+}
+
+.user-box {
+    margin-top: 2rem;
+    background: var(--color-bg);
+    border-radius: var(--radius-md);
+    padding: 2rem;
+    text-align: left;
+}
+
+.user-box h2 {
+    font-family: var(--font-title);
+    color: var(--color-text);
+    margin-bottom: 1rem;
+}
+
+.user-box p {
+    margin-bottom: 0.8rem;
+}
+
+.auth-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 2rem 1.3rem;
+    }
+
+    .auth-actions {
+        flex-direction: column;
+    }
+}

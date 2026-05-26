@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ingreso Clientes | Neyrhyld Martin</title>
+
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-container">
+
+                <div class="logo">
+                    <a href="index.html" class="logo-link" aria-label="Inicio Neyrhyld Martin">
+                        <img src="assets/logo_neymartin_estetica.png"
+                            alt="Neyrhyld Martin Cosmetología y Estética Integrativa" class="logo-img">
+
+                        <div class="brand-text">
+                            <span class="brand-name">Neyrhyld Martin</span>
+                            <span class="brand-subtitle">Estética Integrativa</span>
+                        </div>
+                    </a>
+                </div>
+
+                <ul class="nav-menu">
+                    <li><a href="index.html#inicio">Inicio</a></li>
+                    <li><a href="index.html#servicios">Servicios</a></li>
+                    <li><a href="index.html#contacto">Contacto</a></li>
+                </ul>
+
+                <div class="hamburger" aria-label="Abrir menú de navegación">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+
+            </div>
+        </nav>
+    </header>
+
+    <main class="auth-page">
+        <section class="auth-card">
+            <p class="section-kicker">Reservas Online</p>
+            <h1>Accede a tu cuenta</h1>
+
+            <p>
+                Inicia sesión con Google para consultar disponibilidad y reservar una hora.
+            </p>
+
+            <button id="loginGoogleBtn" class="btn btn-primary auth-google-btn">
+                <i class="fab fa-google"></i>
+                Iniciar sesión con Google
+            </button>
+
+            <div id="userBox" class="user-box" style="display: none;">
+                <h2>Sesión iniciada</h2>
+                <p><strong>Nombre:</strong> <span id="userName"></span></p>
+                <p><strong>Email:</strong> <span id="userEmail"></span></p>
+                <p><strong>Rol:</strong> <span id="userRole"></span></p>
+
+                <div class="auth-actions">
+                    <a href="reservas.html" id="reservasBtn" class="btn btn-primary" style="display: none;">
+                        Ir a Reservas
+                    </a>
+
+                    <a href="admin.html" id="adminBtn" class="btn btn-secondary-dark" style="display: none;">
+                        Panel Administración
+                    </a>
+
+                    <button id="logoutBtn" class="btn btn-secondary-dark">
+                        Cerrar sesión
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+    <script type="module" src="auth.js"></script>
+
+</body>
+
+</html>
