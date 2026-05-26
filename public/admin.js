@@ -13,7 +13,9 @@ import {
     serverTimestamp,
     query,
     orderBy,
-    onSnapshot
+    onSnapshot,
+    runTransaction,
+    deleteField
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 import { firebaseConfig } from "./firebase-config.js";
@@ -177,19 +179,37 @@ function listenReservations() {
             const reservation = docSnap.data();
 
             const item = document.createElement("div");
-            item.className = "reservation-item";
+            item.className = `reservation-item ${reservation.estado || "confirmada"}`;
 
             item.innerHTML = `
-                <div>
-                    <strong>${formatDate(reservation.fecha)}</strong>
-                    <p>${reservation.horaInicio} - ${reservation.horaFin}</p>
-                    <p><strong>Servicio:</strong> ${reservation.servicio}</p>
-                    <p><strong>Cliente:</strong> ${reservation.userName || "No informado"}</p>
-                    <p><strong>Email:</strong> ${reservation.userEmail || "No informado"}</p>
-                </div>
+        <div>
+            <strong>${formatDate(reservation.fecha)}</strong>
+            <p>${reservation.horaInicio} - ${reservation.horaFin}</p>
+            <p><strong>Servicio:</strong> ${reservation.servicio}</p>
+            <p><strong>Cliente:</strong> ${reservation.userName || "No informado"}</p>
+            <p><strong>Email:</strong> ${reservation.userEmail || "No informado"}</p>
+            <p><strong>Estado:</strong> ${reservation.estado || "confirmada"}</p>
+        </div>
 
-                <span class="status-pill reserved">Reservada</span>
-            `;
+        <div class="reservation-actions">
+            <span class="status-pill reserved">${reservation.estado || "reservada"}</span>
+
+            ${reservation.estado === "confirmada"
+                    ? `<button class="btn btn-secondary-dark cancel-reservation-btn" data-reservation-id="${docSnap.id}">
+                        Cancelar / liberar
+                       </button>`
+                    : ""
+                }
+        </div>
+    `;
+
+            const cancelBtn = item.querySelector(".cancel-reservation-btn");
+
+            if (cancelBtn) {
+                cancelBtn.addEventListener("click", () => {
+                    cancelReservation(docSnap.id);
+                });
+            }
 
             list.appendChild(item);
         });
@@ -209,6 +229,69 @@ function showMessage(element, text, type) {
         element.textContent = "";
         element.className = "admin-message";
     }, 3500);
+}
+
+async function cancelReservation(reservationId) {
+    const confirmCancel = confirm(
+        "¿Confirmas que deseas cancelar esta reserva y liberar la hora?"
+    );
+
+    if (!confirmCancel) return;
+
+    const reservationRef = doc(db, "reservations", reservationId);
+
+    try {
+        await runTransaction(db, async (transaction) => {
+            const reservationSnap = await transaction.get(reservationRef);
+
+            if (!reservationSnap.exists()) {
+                throw new Error("La reserva ya no existe.");
+            }
+
+            const reservation = reservationSnap.data();
+
+            if (reservation.estado !== "confirmada") {
+                throw new Error("Esta reserva ya no está confirmada.");
+            }
+
+            if (!reservation.slotId) {
+                throw new Error("La reserva no tiene una hora asociada.");
+            }
+
+            const slotRef = doc(db, "availability", reservation.slotId);
+            const slotSnap = await transaction.get(slotRef);
+
+            if (!slotSnap.exists()) {
+                throw new Error("La hora asociada ya no existe.");
+            }
+
+            const slot = slotSnap.data();
+
+            if (slot.estado !== "reservada") {
+                throw new Error("La hora asociada no está marcada como reservada.");
+            }
+
+            transaction.update(reservationRef, {
+                estado: "cancelada",
+                cancelledAt: serverTimestamp(),
+                cancelledBy: currentAdminUser.uid,
+                cancelledByEmail: currentAdminUser.email
+            });
+
+            transaction.update(slotRef, {
+                estado: "disponible",
+                reservedBy: deleteField(),
+                reservationId: deleteField(),
+                reservedAt: deleteField()
+            });
+        });
+
+        alert("✅ Reserva cancelada y hora liberada correctamente.");
+
+    } catch (error) {
+        console.error("Error cancelando reserva:", error);
+        alert(`❌ No se pudo cancelar la reserva.\n\n${error.message}`);
+    }
 }
 
 function formatDate(dateString) {

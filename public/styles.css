@@ -1420,3 +1420,39 @@ section {
         align-items: flex-start;
     }
 }
+
+/* =========================================================
+   ADMIN - ACCIONES DE RESERVA
+   ========================================================= */
+
+.reservation-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    align-items: flex-end;
+}
+
+.cancel-reservation-btn {
+    font-size: 0.85rem;
+    padding: 0.7rem 1rem;
+}
+
+.reservation-item.cancelada {
+    opacity: 0.72;
+}
+
+.reservation-item.cancelada .status-pill {
+    background: #fdecec;
+    color: #b42318;
+}
+
+@media (max-width: 600px) {
+    .reservation-actions {
+        align-items: flex-start;
+        width: 100%;
+    }
+
+    .cancel-reservation-btn {
+        width: 100%;
+    }
+}
