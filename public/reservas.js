@@ -12,7 +12,9 @@ import {
     query,
     where,
     orderBy,
-    onSnapshot
+    onSnapshot,
+    runTransaction,
+    serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 import { firebaseConfig } from "./firebase-config.js";
@@ -20,6 +22,9 @@ import { firebaseConfig } from "./firebase-config.js";
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+
+let currentUser = null;
+let currentProfile = null;
 
 document.addEventListener("DOMContentLoaded", () => {
     const authStatus = document.getElementById("authStatus");
@@ -34,6 +39,8 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+        currentUser = user;
+
         const userRef = doc(db, "users", user.uid);
         const userSnap = await getDoc(userRef);
 
@@ -41,6 +48,8 @@ document.addEventListener("DOMContentLoaded", () => {
             authStatus.textContent = "No encontramos tu perfil. Vuelve a iniciar sesión.";
             return;
         }
+
+        currentProfile = userSnap.data();
 
         authStatus.textContent = `Bienvenido/a, ${user.displayName || user.email}`;
 
@@ -80,6 +89,7 @@ function listenAvailableSlots() {
 
         snapshot.forEach((docSnap) => {
             const slot = docSnap.data();
+            const slotId = docSnap.id;
 
             const item = document.createElement("div");
             item.className = "available-slot-card";
@@ -95,10 +105,13 @@ function listenAvailableSlots() {
                     <p>Hora disponible para reserva.</p>
                 </div>
 
-                <button class="btn btn-secondary-dark slot-btn" disabled>
-                    Reservar próximamente
+                <button class="btn btn-primary slot-btn" data-slot-id="${slotId}">
+                    Reservar hora
                 </button>
             `;
+
+            const reserveBtn = item.querySelector(".slot-btn");
+            reserveBtn.addEventListener("click", () => reserveSlot(slotId));
 
             list.appendChild(item);
         });
@@ -113,6 +126,64 @@ function listenAvailableSlots() {
             </div>
         `;
     });
+}
+
+async function reserveSlot(slotId) {
+    if (!currentUser || !currentProfile) {
+        alert("Debes iniciar sesión para reservar.");
+        window.location.href = "login.html";
+        return;
+    }
+
+    const confirmReservation = confirm("¿Confirmas que deseas reservar esta hora?");
+
+    if (!confirmReservation) return;
+
+    const slotRef = doc(db, "availability", slotId);
+    const reservationRef = doc(collection(db, "reservations"));
+
+    try {
+        await runTransaction(db, async (transaction) => {
+            const slotSnap = await transaction.get(slotRef);
+
+            if (!slotSnap.exists()) {
+                throw new Error("La hora seleccionada ya no existe.");
+            }
+
+            const slot = slotSnap.data();
+
+            if (slot.estado !== "disponible") {
+                throw new Error("Esta hora ya no está disponible.");
+            }
+
+            transaction.set(reservationRef, {
+                userId: currentUser.uid,
+                userName: currentUser.displayName || currentProfile.nombre || "",
+                userEmail: currentUser.email || currentProfile.email || "",
+                userPhone: currentProfile.telefono || "",
+                slotId,
+                fecha: slot.fecha,
+                horaInicio: slot.horaInicio,
+                horaFin: slot.horaFin,
+                servicio: slot.servicio,
+                estado: "confirmada",
+                createdAt: serverTimestamp()
+            });
+
+            transaction.update(slotRef, {
+                estado: "reservada",
+                reservedBy: currentUser.uid,
+                reservationId: reservationRef.id,
+                reservedAt: serverTimestamp()
+            });
+        });
+
+        alert("✅ Hora reservada correctamente.");
+
+    } catch (error) {
+        console.error("Error reservando hora:", error);
+        alert(`❌ No se pudo reservar la hora.\n\n${error.message}`);
+    }
 }
 
 function formatDate(dateString) {

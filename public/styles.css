@@ -1366,8 +1366,6 @@ section {
 
 .slot-btn {
     white-space: nowrap;
-    opacity: 0.75;
-    cursor: not-allowed;
 }
 
 @media (max-width: 760px) {
