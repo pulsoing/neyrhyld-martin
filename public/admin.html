@@ -54,27 +54,51 @@
 
             <div id="adminContent" style="display: none;">
                 <p>
-                    Aquí administraremos horas disponibles, reservas y clientes registrados.
+                    Desde este panel podrás crear horas disponibles, revisar reservas y consultar clientes registrados.
                 </p>
 
                 <div class="admin-grid">
-                    <div class="empty-state">
-                        <i class="fas fa-clock"></i>
-                        <h2>Horas disponibles</h2>
-                        <p>Próxima etapa: crear disponibilidad semanal.</p>
+
+                    <div class="admin-section">
+                        <h2><i class="fas fa-clock"></i> Crear hora disponible</h2>
+
+                        <form id="availabilityForm" class="admin-form">
+                            <label for="fecha">Fecha</label>
+                            <input type="date" id="fecha" required>
+
+                            <label for="horaInicio">Hora inicio</label>
+                            <input type="time" id="horaInicio" required>
+
+                            <label for="horaFin">Hora fin</label>
+                            <input type="time" id="horaFin" required>
+
+                            <label for="servicio">Servicio</label>
+                            <select id="servicio" required>
+                                <option value="">Selecciona un servicio</option>
+                                <option value="Cosmetología facial">Cosmetología facial</option>
+                                <option value="Estética corporal">Estética corporal</option>
+                                <option value="Masaje terapéutico">Masaje terapéutico</option>
+                                <option value="Terapia complementaria">Terapia complementaria</option>
+                                <option value="Gift Card Spa">Gift Card Spa</option>
+                                <option value="Consulta general">Consulta general</option>
+                            </select>
+
+                            <button type="submit" class="btn btn-primary">
+                                Crear hora disponible
+                            </button>
+                        </form>
+
+                        <p id="availabilityMessage" class="admin-message"></p>
                     </div>
 
-                    <div class="empty-state">
-                        <i class="fas fa-users"></i>
-                        <h2>Clientes registrados</h2>
-                        <p>Próxima etapa: listar usuarios desde Firestore.</p>
+                    <div class="admin-section">
+                        <h2><i class="fas fa-calendar-check"></i> Horas creadas</h2>
+
+                        <div id="availabilityList" class="availability-list">
+                            <p>Cargando horas disponibles...</p>
+                        </div>
                     </div>
 
-                    <div class="empty-state">
-                        <i class="fas fa-calendar-check"></i>
-                        <h2>Reservas</h2>
-                        <p>Próxima etapa: visualizar horas reservadas.</p>
-                    </div>
                 </div>
             </div>
         </section>
