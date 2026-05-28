@@ -25,6 +25,19 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 let currentAdminUser = null;
+let availabilitySlots = [];
+let reservationsData = [];
+
+const DASHBOARD_DAYS = 5;
+
+const SERVICES = [
+    "Cosmetología facial",
+    "Estética corporal",
+    "Masaje terapéutico",
+    "Terapia complementaria",
+    "Gift Card Spa",
+    "Consulta general"
+];
 
 document.addEventListener("DOMContentLoaded", () => {
     const authStatus = document.getElementById("authStatus");
@@ -63,8 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
         adminContent.style.display = "block";
 
         initAvailabilityForm();
-        listenAvailability();
-        listenReservations();
+        listenAdminDashboard();
     });
 });
 
@@ -114,11 +126,7 @@ function initAvailabilityForm() {
     });
 }
 
-function listenAvailability() {
-    const list = document.getElementById("availabilityList");
-
-    if (!list) return;
-
+function listenAdminDashboard() {
     const availabilityQuery = query(
         collection(db, "availability"),
         orderBy("fecha", "asc"),
@@ -126,41 +134,25 @@ function listenAvailability() {
     );
 
     onSnapshot(availabilityQuery, (snapshot) => {
-        if (snapshot.empty) {
-            list.innerHTML = "<p>No hay horas disponibles creadas.</p>";
-            return;
-        }
-
-        list.innerHTML = "";
+        availabilitySlots = [];
 
         snapshot.forEach((docSnap) => {
-            const slot = docSnap.data();
-
-            const item = document.createElement("div");
-            item.className = `availability-item ${slot.estado}`;
-
-            item.innerHTML = `
-                <div>
-                    <strong>${formatDate(slot.fecha)}</strong>
-                    <p>${slot.horaInicio} - ${slot.horaFin}</p>
-                    <p>${slot.servicio}</p>
-                </div>
-                <span class="status-pill">${slot.estado}</span>
-            `;
-
-            list.appendChild(item);
+            availabilitySlots.push({
+                id: docSnap.id,
+                ...docSnap.data()
+            });
         });
+
+        renderAdminDashboard();
+
     }, (error) => {
         console.error("Error leyendo disponibilidad:", error);
-        list.innerHTML = "<p>No se pudieron cargar las horas disponibles.</p>";
+
+        const dashboard = document.getElementById("agendaDashboard");
+        if (dashboard) {
+            dashboard.innerHTML = "<p>No se pudo cargar la disponibilidad.</p>";
+        }
     });
-}
-
-function listenReservations() {
-    const confirmedList = document.getElementById("confirmedReservationsList");
-    const cancelledList = document.getElementById("cancelledReservationsList");
-
-    if (!confirmedList || !cancelledList) return;
 
     const reservationsQuery = query(
         collection(db, "reservations"),
@@ -169,73 +161,144 @@ function listenReservations() {
     );
 
     onSnapshot(reservationsQuery, (snapshot) => {
-        const confirmedReservations = [];
-        const cancelledReservations = [];
+        reservationsData = [];
 
         snapshot.forEach((docSnap) => {
-            const reservation = {
+            reservationsData.push({
                 id: docSnap.id,
                 ...docSnap.data()
-            };
-
-            if (reservation.estado === "cancelada") {
-                cancelledReservations.push(reservation);
-            } else {
-                confirmedReservations.push(reservation);
-            }
+            });
         });
 
-        renderConfirmedReservations(confirmedList, confirmedReservations);
-        renderCancelledReservations(cancelledList, cancelledReservations);
+        renderAdminDashboard();
 
     }, (error) => {
         console.error("Error leyendo reservas:", error);
 
-        confirmedList.innerHTML = "<p>No se pudieron cargar las reservas confirmadas.</p>";
-        cancelledList.innerHTML = "<p>No se pudieron cargar las reservas canceladas.</p>";
+        const cancelledList = document.getElementById("cancelledReservationsList");
+        if (cancelledList) {
+            cancelledList.innerHTML = "<p>No se pudieron cargar las reservas canceladas.</p>";
+        }
     });
 }
 
-function renderConfirmedReservations(list, reservations) {
-    if (!reservations.length) {
-        list.innerHTML = "<p>No hay reservas confirmadas.</p>";
-        return;
-    }
+function renderAdminDashboard() {
+    const summary = document.getElementById("adminSummary");
+    const dashboard = document.getElementById("agendaDashboard");
+    const cancelledList = document.getElementById("cancelledReservationsList");
 
-    list.innerHTML = "";
+    if (!summary || !dashboard || !cancelledList) return;
 
-    reservations.forEach((reservation) => {
-        const item = document.createElement("div");
-        item.className = "reservation-item confirmada";
+    const days = getNextDays(DASHBOARD_DAYS);
+    const today = days[0].date;
 
-        item.innerHTML = `
-            <div>
-                <strong>${formatDate(reservation.fecha)}</strong>
-                <p>${reservation.horaInicio} - ${reservation.horaFin}</p>
-                <p><strong>Servicio:</strong> ${reservation.servicio}</p>
-                <p><strong>Cliente:</strong> ${reservation.userName || "No informado"}</p>
-                <p><strong>Email:</strong> ${reservation.userEmail || "No informado"}</p>
-                <p><strong>Estado:</strong> ${reservation.estado || "confirmada"}</p>
+    const futureSlots = availabilitySlots.filter(slot => slot.fecha >= today);
+
+    const reservationsById = new Map(
+        reservationsData.map(reservation => [reservation.id, reservation])
+    );
+
+    const availableCount = futureSlots.filter(slot => slot.estado === "disponible").length;
+    const reservedCount = futureSlots.filter(slot => slot.estado === "reservada").length;
+    const cancelledReservations = reservationsData.filter(reservation => reservation.estado === "cancelada");
+
+    summary.innerHTML = `
+        <div class="summary-grid">
+            <div class="summary-card available">
+                <span>${availableCount}</span>
+                <p>Disponibles</p>
             </div>
 
-            <div class="reservation-actions">
-                <span class="status-pill reserved">Confirmada</span>
+            <div class="summary-card reserved">
+                <span>${reservedCount}</span>
+                <p>Reservadas</p>
+            </div>
 
-                <button class="btn btn-secondary-dark cancel-reservation-btn" data-reservation-id="${reservation.id}">
-                    Cancelar / liberar
-                </button>
+            <div class="summary-card cancelled">
+                <span>${cancelledReservations.length}</span>
+                <p>Canceladas</p>
+            </div>
+        </div>
+    `;
+
+    renderAgendaMatrix(dashboard, days, futureSlots, reservationsById);
+    renderCancelledReservations(cancelledList, cancelledReservations);
+}
+
+function renderAgendaMatrix(container, days, slots, reservationsById) {
+    let html = `
+        <div class="agenda-grid" style="--agenda-columns: ${days.length + 1};">
+            <div class="agenda-head service-head">Servicio</div>
+    `;
+
+    days.forEach(day => {
+        html += `
+            <div class="agenda-head">
+                <strong>${day.label}</strong>
+                <span>${formatDate(day.date)}</span>
             </div>
         `;
+    });
 
-        const cancelBtn = item.querySelector(".cancel-reservation-btn");
+    SERVICES.forEach(service => {
+        html += `<div class="agenda-service">${service}</div>`;
 
-        if (cancelBtn) {
-            cancelBtn.addEventListener("click", () => {
-                cancelReservation(reservation.id);
+        days.forEach(day => {
+            const cellSlots = slots
+                .filter(slot => slot.servicio === service && slot.fecha === day.date)
+                .sort((a, b) => a.horaInicio.localeCompare(b.horaInicio));
+
+            html += `<div class="agenda-cell">`;
+
+            if (!cellSlots.length) {
+                html += `<span class="agenda-empty">—</span>`;
+            }
+
+            cellSlots.forEach(slot => {
+                if (slot.estado === "reservada") {
+                    const reservation = reservationsById.get(slot.reservationId);
+
+                    const clientName = reservation?.userName || "Cliente no informado";
+                    const clientEmail = reservation?.userEmail || "Email no informado";
+
+                    html += `
+                        <button 
+                            class="agenda-chip reservada"
+                            title="${escapeHtml(clientName)} - ${escapeHtml(clientEmail)}"
+                            data-reservation-id="${slot.reservationId || ""}">
+                            <span>${slot.horaInicio}</span>
+                            <strong>R</strong>
+                        </button>
+                    `;
+                } else {
+                    html += `
+                        <span class="agenda-chip disponible">
+                            <span>${slot.horaInicio}</span>
+                            <strong>D</strong>
+                        </span>
+                    `;
+                }
             });
-        }
 
-        list.appendChild(item);
+            html += `</div>`;
+        });
+    });
+
+    html += `</div>`;
+
+    container.innerHTML = html;
+
+    container.querySelectorAll(".agenda-chip.reservada").forEach(button => {
+        button.addEventListener("click", () => {
+            const reservationId = button.dataset.reservationId;
+
+            if (!reservationId) {
+                alert("Esta reserva no tiene ID asociado.");
+                return;
+            }
+
+            cancelReservation(reservationId);
+        });
     });
 }
 
@@ -247,27 +310,66 @@ function renderCancelledReservations(list, reservations) {
 
     list.innerHTML = "";
 
-    reservations.forEach((reservation) => {
-        const item = document.createElement("div");
-        item.className = "reservation-item cancelada";
+    reservations
+        .sort((a, b) => {
+            if (a.fecha !== b.fecha) return a.fecha.localeCompare(b.fecha);
+            return a.horaInicio.localeCompare(b.horaInicio);
+        })
+        .forEach((reservation) => {
+            const item = document.createElement("div");
+            item.className = "reservation-item cancelada";
 
-        item.innerHTML = `
-            <div>
-                <strong>${formatDate(reservation.fecha)}</strong>
-                <p>${reservation.horaInicio} - ${reservation.horaFin}</p>
-                <p><strong>Servicio:</strong> ${reservation.servicio}</p>
-                <p><strong>Cliente:</strong> ${reservation.userName || "No informado"}</p>
-                <p><strong>Email:</strong> ${reservation.userEmail || "No informado"}</p>
-                <p><strong>Estado:</strong> cancelada</p>
-            </div>
+            item.innerHTML = `
+                <div>
+                    <strong>${formatDate(reservation.fecha)}</strong>
+                    <p>${reservation.horaInicio} - ${reservation.horaFin}</p>
+                    <p><strong>Servicio:</strong> ${reservation.servicio}</p>
+                    <p><strong>Cliente:</strong> ${reservation.userName || "No informado"}</p>
+                    <p><strong>Email:</strong> ${reservation.userEmail || "No informado"}</p>
+                    <p><strong>Estado:</strong> cancelada</p>
+                </div>
 
-            <div class="reservation-actions">
-                <span class="status-pill cancelled">Cancelada</span>
-            </div>
-        `;
+                <div class="reservation-actions">
+                    <span class="status-pill cancelled">Cancelada</span>
+                </div>
+            `;
 
-        list.appendChild(item);
-    });
+            list.appendChild(item);
+        });
+}
+
+function getNextDays(numberOfDays) {
+    const days = [];
+    const today = new Date();
+
+    for (let i = 0; i < numberOfDays; i++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() + i);
+
+        days.push({
+            date: toLocalDateString(date),
+            label: i === 0 ? "Hoy" : i === 1 ? "Mañana" : `Día +${i}`
+        });
+    }
+
+    return days;
+}
+
+function toLocalDateString(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+}
+
+function escapeHtml(value) {
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
 }
 
 function showMessage(element, text, type) {

@@ -54,12 +54,13 @@
 
             <div id="adminContent" style="display: none;">
                 <p>
-                    Desde este panel podrás crear horas disponibles, revisar reservas y consultar clientes registrados.
+                    Desde este panel podrás crear horas disponibles, revisar reservas vigentes y consultar el historial
+                    cancelado.
                 </p>
 
-                <div class="admin-grid">
+                <div class="admin-top-layout">
 
-                    <div class="admin-section">
+                    <div class="admin-section admin-create-section">
                         <h2><i class="fas fa-clock"></i> Crear hora disponible</h2>
 
                         <form id="availabilityForm" class="admin-form">
@@ -91,30 +92,36 @@
                         <p id="availabilityMessage" class="admin-message"></p>
                     </div>
 
-                    <div class="admin-section">
-                        <h2><i class="fas fa-calendar-day"></i> Horas disponibles</h2>
+                    <div class="admin-section admin-summary-section">
+                        <h2><i class="fas fa-chart-simple"></i> Resumen</h2>
 
-                        <div id="availabilityList" class="availability-list">
-                            <p>Cargando horas disponibles...</p>
+                        <div id="adminSummary" class="admin-summary">
+                            <p>Cargando resumen...</p>
                         </div>
                     </div>
 
-                    <div class="admin-section">
-                        <h2><i class="fas fa-calendar-check"></i> Reservas confirmadas</h2>
+                </div>
 
-                        <div id="confirmedReservationsList" class="reservation-list">
-                            <p>Cargando reservas confirmadas...</p>
+                <div class="admin-section admin-dashboard-section">
+                    <h2><i class="fas fa-table"></i> Dashboard de agenda</h2>
+
+                    <p class="dashboard-help">
+                        Vista de disponibilidad desde hoy y próximos días. D = disponible, R = reservada.
+                    </p>
+
+                    <div class="dashboard-scroll">
+                        <div id="agendaDashboard" class="agenda-dashboard">
+                            <p>Cargando agenda...</p>
                         </div>
                     </div>
+                </div>
 
-                    <div class="admin-section">
-                        <h2><i class="fas fa-history"></i> Reservas canceladas</h2>
+                <div class="admin-section admin-cancelled-section">
+                    <h2><i class="fas fa-history"></i> Reservas canceladas</h2>
 
-                        <div id="cancelledReservationsList" class="reservation-list">
-                            <p>Cargando reservas canceladas...</p>
-                        </div>
+                    <div id="cancelledReservationsList" class="reservation-list">
+                        <p>Cargando reservas canceladas...</p>
                     </div>
-
                 </div>
             </div>
         </section>
