@@ -157,9 +157,10 @@ function listenAvailability() {
 }
 
 function listenReservations() {
-    const list = document.getElementById("reservationsList");
+    const confirmedList = document.getElementById("confirmedReservationsList");
+    const cancelledList = document.getElementById("cancelledReservationsList");
 
-    if (!list) return;
+    if (!confirmedList || !cancelledList) return;
 
     const reservationsQuery = query(
         collection(db, "reservations"),
@@ -168,57 +169,107 @@ function listenReservations() {
     );
 
     onSnapshot(reservationsQuery, (snapshot) => {
-        if (snapshot.empty) {
-            list.innerHTML = "<p>No hay horas reservadas.</p>";
-            return;
-        }
-
-        list.innerHTML = "";
+        const confirmedReservations = [];
+        const cancelledReservations = [];
 
         snapshot.forEach((docSnap) => {
-            const reservation = docSnap.data();
+            const reservation = {
+                id: docSnap.id,
+                ...docSnap.data()
+            };
 
-            const item = document.createElement("div");
-            item.className = `reservation-item ${reservation.estado || "confirmada"}`;
-
-            item.innerHTML = `
-        <div>
-            <strong>${formatDate(reservation.fecha)}</strong>
-            <p>${reservation.horaInicio} - ${reservation.horaFin}</p>
-            <p><strong>Servicio:</strong> ${reservation.servicio}</p>
-            <p><strong>Cliente:</strong> ${reservation.userName || "No informado"}</p>
-            <p><strong>Email:</strong> ${reservation.userEmail || "No informado"}</p>
-            <p><strong>Estado:</strong> ${reservation.estado || "confirmada"}</p>
-        </div>
-
-        <div class="reservation-actions">
-            <span class="status-pill reserved">${reservation.estado || "reservada"}</span>
-
-            ${reservation.estado === "confirmada"
-                    ? `<button class="btn btn-secondary-dark cancel-reservation-btn" data-reservation-id="${docSnap.id}">
-                        Cancelar / liberar
-                       </button>`
-                    : ""
-                }
-        </div>
-    `;
-
-            const cancelBtn = item.querySelector(".cancel-reservation-btn");
-
-            if (cancelBtn) {
-                cancelBtn.addEventListener("click", () => {
-                    cancelReservation(docSnap.id);
-                });
+            if (reservation.estado === "cancelada") {
+                cancelledReservations.push(reservation);
+            } else {
+                confirmedReservations.push(reservation);
             }
-
-            list.appendChild(item);
         });
+
+        renderConfirmedReservations(confirmedList, confirmedReservations);
+        renderCancelledReservations(cancelledList, cancelledReservations);
 
     }, (error) => {
         console.error("Error leyendo reservas:", error);
-        list.innerHTML = "<p>No se pudieron cargar las reservas.</p>";
+
+        confirmedList.innerHTML = "<p>No se pudieron cargar las reservas confirmadas.</p>";
+        cancelledList.innerHTML = "<p>No se pudieron cargar las reservas canceladas.</p>";
     });
 }
+
+function renderConfirmedReservations(list, reservations) {
+    if (!reservations.length) {
+        list.innerHTML = "<p>No hay reservas confirmadas.</p>";
+        return;
+    }
+
+    list.innerHTML = "";
+
+    reservations.forEach((reservation) => {
+        const item = document.createElement("div");
+        item.className = "reservation-item confirmada";
+
+        item.innerHTML = `
+            <div>
+                <strong>${formatDate(reservation.fecha)}</strong>
+                <p>${reservation.horaInicio} - ${reservation.horaFin}</p>
+                <p><strong>Servicio:</strong> ${reservation.servicio}</p>
+                <p><strong>Cliente:</strong> ${reservation.userName || "No informado"}</p>
+                <p><strong>Email:</strong> ${reservation.userEmail || "No informado"}</p>
+                <p><strong>Estado:</strong> ${reservation.estado || "confirmada"}</p>
+            </div>
+
+            <div class="reservation-actions">
+                <span class="status-pill reserved">Confirmada</span>
+
+                <button class="btn btn-secondary-dark cancel-reservation-btn" data-reservation-id="${reservation.id}">
+                    Cancelar / liberar
+                </button>
+            </div>
+        `;
+
+        const cancelBtn = item.querySelector(".cancel-reservation-btn");
+
+        if (cancelBtn) {
+            cancelBtn.addEventListener("click", () => {
+                cancelReservation(reservation.id);
+            });
+        }
+
+        list.appendChild(item);
+    });
+}
+
+function renderCancelledReservations(list, reservations) {
+    if (!reservations.length) {
+        list.innerHTML = "<p>No hay reservas canceladas.</p>";
+        return;
+    }
+
+    list.innerHTML = "";
+
+    reservations.forEach((reservation) => {
+        const item = document.createElement("div");
+        item.className = "reservation-item cancelada";
+
+        item.innerHTML = `
+            <div>
+                <strong>${formatDate(reservation.fecha)}</strong>
+                <p>${reservation.horaInicio} - ${reservation.horaFin}</p>
+                <p><strong>Servicio:</strong> ${reservation.servicio}</p>
+                <p><strong>Cliente:</strong> ${reservation.userName || "No informado"}</p>
+                <p><strong>Email:</strong> ${reservation.userEmail || "No informado"}</p>
+                <p><strong>Estado:</strong> cancelada</p>
+            </div>
+
+            <div class="reservation-actions">
+                <span class="status-pill cancelled">Cancelada</span>
+            </div>
+        `;
+
+        list.appendChild(item);
+    });
+}
+
 function showMessage(element, text, type) {
     if (!element) return;
 

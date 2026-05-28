@@ -1456,3 +1456,26 @@ section {
         width: 100%;
     }
 }
+
+/* =========================================================
+   ADMIN - RESERVAS SEPARADAS
+   ========================================================= */
+
+.reservation-item.confirmada {
+    border-left: 5px solid #2f7d4f;
+}
+
+.reservation-item.cancelada {
+    border-left: 5px solid #b42318;
+    opacity: 0.78;
+}
+
+.status-pill.cancelled {
+    background: #fdecec;
+    color: #b42318;
+}
+
+.status-pill.reserved {
+    background: #fff4e5;
+    color: #9a5b00;
+}
