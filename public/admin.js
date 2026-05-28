@@ -227,7 +227,7 @@ function renderAdminDashboard() {
 
 function renderAgendaMatrix(container, days, slots, reservationsById) {
     let html = `
-        <div class="agenda-grid" style="--agenda-columns: ${days.length + 1};">
+        <div class="agenda-grid" style="--agenda-days: ${days.length};">
             <div class="agenda-head service-head">Servicio</div>
     `;
 

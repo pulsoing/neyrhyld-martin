@@ -1567,7 +1567,7 @@ section {
 
 .agenda-grid {
     display: grid;
-    grid-template-columns: 210px repeat(var(--agenda-columns), minmax(150px, 1fr));
+    grid-template-columns: 210px repeat(var(--agenda-days), minmax(150px, 1fr));
     border: 1px solid var(--color-border);
     border-radius: 20px;
     overflow: hidden;
