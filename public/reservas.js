@@ -396,17 +396,6 @@ function formatLongDate(dateString) {
     });
 }
 
-function formatLongDate(dateString) {
-    const [year, month, day] = dateString.split("-");
-    const date = new Date(Number(year), Number(month) - 1, Number(day));
-
-    return date.toLocaleDateString("es-CL", {
-        weekday: "long",
-        day: "2-digit",
-        month: "long"
-    });
-}
-
 async function notifyReservation(reservationPayload) {
     if (!reservationPayload) return;
 
