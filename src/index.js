@@ -10,6 +10,10 @@ export default {
             return handleNotificarReserva(request, env);
         }
 
+        if (url.pathname === "/api/notificar-cancelacion" && request.method === "POST") {
+            return handleNotificarCancelacion(request, env);
+        }
+
         if (url.pathname.startsWith("/api/")) {
             return jsonResponse({
                 ok: false,
@@ -17,9 +21,6 @@ export default {
             }, 404);
         }
 
-        if (url.pathname === "/api/notificar-cancelacion" && request.method === "POST") {
-            return handleNotificarCancelacion(request, env);
-        }
 
         return env.ASSETS.fetch(request);
     }
