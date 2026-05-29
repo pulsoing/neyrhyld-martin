@@ -85,36 +85,90 @@ function listenAvailableSlots() {
             return;
         }
 
-        list.innerHTML = "";
+        const today = toLocalDateString(new Date());
+        const slotsByDate = {};
 
         snapshot.forEach((docSnap) => {
-            const slot = docSnap.data();
-            const slotId = docSnap.id;
+            const slot = {
+                id: docSnap.id,
+                ...docSnap.data()
+            };
 
-            const item = document.createElement("div");
-            item.className = "available-slot-card";
+            if (slot.fecha < today) return;
 
-            item.innerHTML = `
-                <div class="slot-date">
-                    <span class="slot-day">${formatDate(slot.fecha)}</span>
-                    <span class="slot-time">${slot.horaInicio} - ${slot.horaFin}</span>
+            if (!slotsByDate[slot.fecha]) {
+                slotsByDate[slot.fecha] = [];
+            }
+
+            slotsByDate[slot.fecha].push(slot);
+        });
+
+        const dates = Object.keys(slotsByDate).sort();
+
+        if (!dates.length) {
+            list.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-calendar-times"></i>
+                    <h2>No hay horas disponibles</h2>
+                    <p>Las horas disponibles ya pasaron o no existen nuevos horarios cargados.</p>
+                </div>
+            `;
+            return;
+        }
+
+        list.innerHTML = "";
+
+        dates.forEach((date) => {
+            const group = document.createElement("section");
+            group.className = "client-date-group";
+
+            const sortedSlots = slotsByDate[date].sort((a, b) => {
+                if (a.servicio !== b.servicio) {
+                    return a.servicio.localeCompare(b.servicio);
+                }
+
+                return a.horaInicio.localeCompare(b.horaInicio);
+            });
+
+            group.innerHTML = `
+                <div class="client-date-header">
+                    <div>
+                        <span class="client-date-kicker">${getFriendlyDateLabel(date)}</span>
+                        <h2>${formatLongDate(date)}</h2>
+                    </div>
+                    <span class="client-date-count">${sortedSlots.length} hora(s)</span>
                 </div>
 
-                <div class="slot-info">
-                    <h3>${slot.servicio}</h3>
-                    <p>Hora disponible para reserva.</p>
-                </div>
-
-                <button class="btn btn-primary slot-btn" data-slot-id="${slotId}">
-                    Reservar hora
-                </button>
+                <div class="client-slots-grid"></div>
             `;
 
-            const reserveBtn = item.querySelector(".slot-btn");
-            reserveBtn.addEventListener("click", () => reserveSlot(slotId));
+            const grid = group.querySelector(".client-slots-grid");
 
-            list.appendChild(item);
+            sortedSlots.forEach((slot) => {
+                const item = document.createElement("div");
+                item.className = "client-slot-card";
+
+                item.innerHTML = `
+                    <div class="client-slot-main">
+                        <span class="client-slot-service">${slot.servicio}</span>
+                        <strong>${slot.horaInicio} - ${slot.horaFin}</strong>
+                        <p>Hora disponible para reserva.</p>
+                    </div>
+
+                    <button class="btn btn-primary client-reserve-btn" data-slot-id="${slot.id}">
+                        Reservar hora
+                    </button>
+                `;
+
+                const reserveBtn = item.querySelector(".client-reserve-btn");
+                reserveBtn.addEventListener("click", () => reserveSlot(slot.id));
+
+                grid.appendChild(item);
+            });
+
+            list.appendChild(group);
         });
+
     }, (error) => {
         console.error("Error leyendo horas disponibles:", error);
 
@@ -127,7 +181,6 @@ function listenAvailableSlots() {
         `;
     });
 }
-
 async function reserveSlot(slotId) {
     if (!currentUser || !currentProfile) {
         alert("Debes iniciar sesión para reservar.");
@@ -184,6 +237,38 @@ async function reserveSlot(slotId) {
         console.error("Error reservando hora:", error);
         alert(`❌ No se pudo reservar la hora.\n\n${error.message}`);
     }
+}
+
+function toLocalDateString(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+}
+
+function getFriendlyDateLabel(dateString) {
+    const today = toLocalDateString(new Date());
+
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowString = toLocalDateString(tomorrow);
+
+    if (dateString === today) return "Hoy";
+    if (dateString === tomorrowString) return "Mañana";
+
+    return "Próxima fecha";
+}
+
+function formatLongDate(dateString) {
+    const [year, month, day] = dateString.split("-");
+    const date = new Date(Number(year), Number(month) - 1, Number(day));
+
+    return date.toLocaleDateString("es-CL", {
+        weekday: "long",
+        day: "2-digit",
+        month: "long"
+    });
 }
 
 function formatDate(dateString) {

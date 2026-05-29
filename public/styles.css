@@ -1676,3 +1676,122 @@ section {
         padding: 2rem 1.3rem;
     }
 }
+
+/* =========================================================
+   CLIENTE - RESERVAS AGRUPADAS POR FECHA
+   ========================================================= */
+
+.client-date-group {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.client-date-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1.3rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 1rem;
+}
+
+.client-date-kicker {
+    display: inline-block;
+    color: var(--color-primary-dark);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    margin-bottom: 0.25rem;
+}
+
+.client-date-header h2 {
+    font-family: var(--font-title);
+    color: var(--color-text);
+    font-size: 1.7rem;
+    text-transform: capitalize;
+}
+
+.client-date-count {
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    color: var(--color-primary-dark);
+    border-radius: 999px;
+    padding: 0.45rem 0.9rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.client-slots-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.client-slot-card {
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: 18px;
+    padding: 1.2rem;
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: center;
+    box-shadow: var(--shadow-soft);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.client-slot-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
+}
+
+.client-slot-main {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.client-slot-service {
+    color: var(--color-primary-dark);
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.client-slot-main strong {
+    color: var(--color-text);
+    font-size: 1.15rem;
+}
+
+.client-slot-main p {
+    color: var(--color-text-light);
+    font-size: 0.92rem;
+}
+
+.client-reserve-btn {
+    white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+    .client-date-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .client-slots-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .client-slot-card {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .client-reserve-btn {
+        width: 100%;
+    }
+}
