@@ -58,8 +58,115 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         listenAvailableSlots();
+        listenMyReservations(user.uid);
     });
 });
+
+function listenMyReservations(userId) {
+    const list = document.getElementById("myReservationsList");
+
+    if (!list) return;
+
+    const myReservationsQuery = query(
+        collection(db, "reservations"),
+        where("userId", "==", userId)
+    );
+
+    onSnapshot(myReservationsQuery, (snapshot) => {
+        if (snapshot.empty) {
+            list.innerHTML = `
+                <div class="empty-state compact">
+                    <i class="fas fa-calendar-plus"></i>
+                    <h2>Aún no tienes reservas</h2>
+                    <p>Cuando reserves una hora, aparecerá en esta sección.</p>
+                </div>
+            `;
+            return;
+        }
+
+        const reservations = [];
+
+        snapshot.forEach((docSnap) => {
+            reservations.push({
+                id: docSnap.id,
+                ...docSnap.data()
+            });
+        });
+
+        reservations.sort((a, b) => {
+            if (a.fecha !== b.fecha) return a.fecha.localeCompare(b.fecha);
+            return a.horaInicio.localeCompare(b.horaInicio);
+        });
+
+        const confirmed = reservations.filter(reservation => reservation.estado === "confirmada");
+        const cancelled = reservations.filter(reservation => reservation.estado === "cancelada");
+
+        list.innerHTML = `
+            <div class="my-reservations-group">
+                <h3>Confirmadas</h3>
+                <div id="myConfirmedReservations"></div>
+            </div>
+
+            <div class="my-reservations-group">
+                <h3>Canceladas / historial</h3>
+                <div id="myCancelledReservations"></div>
+            </div>
+        `;
+
+        renderMyReservationGroup(
+            document.getElementById("myConfirmedReservations"),
+            confirmed,
+            "confirmada"
+        );
+
+        renderMyReservationGroup(
+            document.getElementById("myCancelledReservations"),
+            cancelled,
+            "cancelada"
+        );
+
+    }, (error) => {
+        console.error("Error leyendo mis reservas:", error);
+
+        list.innerHTML = `
+            <div class="empty-state compact">
+                <i class="fas fa-exclamation-circle"></i>
+                <h2>No se pudieron cargar tus reservas</h2>
+                <p>Intenta nuevamente más tarde.</p>
+            </div>
+        `;
+    });
+}
+
+function renderMyReservationGroup(container, reservations, status) {
+    if (!container) return;
+
+    if (!reservations.length) {
+        container.innerHTML = `<p class="muted-text">No hay reservas ${status === "confirmada" ? "confirmadas" : "canceladas"}.</p>`;
+        return;
+    }
+
+    container.innerHTML = "";
+
+    reservations.forEach((reservation) => {
+        const item = document.createElement("div");
+        item.className = `my-reservation-card ${status}`;
+
+        item.innerHTML = `
+            <div>
+                <span class="my-reservation-service">${reservation.servicio || "Servicio"}</span>
+                <strong>${formatLongDate(reservation.fecha)}</strong>
+                <p>${reservation.horaInicio} - ${reservation.horaFin}</p>
+            </div>
+
+            <span class="my-reservation-status ${status}">
+                ${status === "confirmada" ? "Confirmada" : "Cancelada"}
+            </span>
+        `;
+
+        container.appendChild(item);
+    });
+}
 
 function listenAvailableSlots() {
     const list = document.getElementById("availableSlotsList");
@@ -289,9 +396,15 @@ function formatLongDate(dateString) {
     });
 }
 
-function formatDate(dateString) {
+function formatLongDate(dateString) {
     const [year, month, day] = dateString.split("-");
-    return `${day}-${month}-${year}`;
+    const date = new Date(Number(year), Number(month) - 1, Number(day));
+
+    return date.toLocaleDateString("es-CL", {
+        weekday: "long",
+        day: "2-digit",
+        month: "long"
+    });
 }
 
 async function notifyReservation(reservationPayload) {

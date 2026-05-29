@@ -1795,3 +1795,122 @@ section {
         width: 100%;
     }
 }
+
+/* =========================================================
+   CLIENTE - MIS RESERVAS
+   ========================================================= */
+
+.client-reservations-section,
+.client-availability-section {
+    margin-top: 2rem;
+}
+
+.client-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.client-section-header h2 {
+    font-family: var(--font-title);
+    color: var(--color-text);
+    font-size: 2rem;
+}
+
+.my-reservations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.my-reservations-group {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 1.4rem;
+}
+
+.my-reservations-group h3 {
+    font-family: var(--font-title);
+    color: var(--color-text);
+    margin-bottom: 1rem;
+}
+
+.my-reservation-card {
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: 18px;
+    padding: 1rem;
+    margin-bottom: 0.8rem;
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: center;
+    box-shadow: var(--shadow-soft);
+}
+
+.my-reservation-card.confirmada {
+    border-left: 5px solid #2f7d4f;
+}
+
+.my-reservation-card.cancelada {
+    border-left: 5px solid #b42318;
+    opacity: 0.78;
+}
+
+.my-reservation-service {
+    display: block;
+    color: var(--color-primary-dark);
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.my-reservation-card strong {
+    color: var(--color-text);
+}
+
+.my-reservation-card p {
+    color: var(--color-text-light);
+    margin-top: 0.2rem;
+}
+
+.my-reservation-status {
+    border-radius: 999px;
+    padding: 0.4rem 0.85rem;
+    font-weight: 700;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.my-reservation-status.confirmada {
+    background: #e8f5ee;
+    color: #2f7d4f;
+}
+
+.my-reservation-status.cancelada {
+    background: #fdecec;
+    color: #b42318;
+}
+
+.empty-state.compact {
+    margin-top: 0;
+    padding: 1.5rem;
+}
+
+.muted-text {
+    color: var(--color-text-light);
+}
+
+@media (max-width: 760px) {
+    .my-reservation-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .my-reservation-status {
+        width: 100%;
+        text-align: center;
+    }
+}
