@@ -28,7 +28,8 @@ const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
 const ADMIN_EMAILS = [
-    "pulsoing.cl@gmail.com"
+    "pulsoing.cl@gmail.com",
+    "neyrhyldmartin.estetica@gmail.com"
 ];
 
 document.addEventListener("DOMContentLoaded", () => {
