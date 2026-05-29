@@ -183,7 +183,7 @@ async function sendCancellationEmailWithResend({
 
             <hr>
 
-            <p>Para coordinar una nueva hora, puedes contactar directamente a Neyrhyld Martin.</p>
+            <p>Para coordinar una nueva hora, puedes realizarlo de nuevo en la página o contactar directamente a Neyrhyld Martin.</p>
         </div>
     `;
 
@@ -199,7 +199,7 @@ Fecha: ${fechaFormateada}
 Horario: ${horaInicio} - ${horaFin}
 ID Reserva: ${reservationId}
 
-Para coordinar una nueva hora, puedes contactar directamente a Neyrhyld Martin.
+Para coordinar una nueva hora, puedes realizarlo de nuevo en la página o contactar directamente a Neyrhyld Martin.
     `;
 
     const response = await fetch("https://api.resend.com/emails", {

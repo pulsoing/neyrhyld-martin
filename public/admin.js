@@ -315,7 +315,7 @@ function renderAgendaMatrix(container, days, slots, reservationsById) {
 
     container.innerHTML = html;
 
-    ccontainer.querySelectorAll(".agenda-chip.reservada, .agenda-chip.solicitud").forEach(button => {
+    container.querySelectorAll(".agenda-chip.reservada, .agenda-chip.solicitud").forEach(button => {
         button.addEventListener("click", () => {
             const reservationId = button.dataset.reservationId;
 
