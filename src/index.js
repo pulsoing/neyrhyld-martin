@@ -6,6 +6,10 @@ export default {
             return handleContacto(request, env);
         }
 
+        if (url.pathname === "/api/notificar-reserva" && request.method === "POST") {
+            return handleNotificarReserva(request, env);
+        }
+
         if (url.pathname.startsWith("/api/")) {
             return jsonResponse({
                 ok: false,
@@ -199,4 +203,170 @@ function escapeHtml(value) {
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
+}
+
+async function handleNotificarReserva(request, env) {
+    try {
+        const origin = request.headers.get("Origin") || "";
+
+        const allowedOrigins = [
+            "https://neyrhyldmartin.pulsoing.cl",
+            "https://neyrhyld-martin.pulsoing-cl.workers.dev"
+        ];
+
+        if (origin && !allowedOrigins.includes(origin)) {
+            return jsonResponse({
+                ok: false,
+                message: "Origen no autorizado."
+            }, 403);
+        }
+
+        const body = await request.json();
+
+        const {
+            userName,
+            userEmail,
+            userPhone,
+            servicio,
+            fecha,
+            horaInicio,
+            horaFin,
+            reservationId
+        } = body;
+
+        if (!userName || !userEmail || !servicio || !fecha || !horaInicio || !horaFin || !reservationId) {
+            return jsonResponse({
+                ok: false,
+                message: "Faltan datos obligatorios para notificar la reserva."
+            }, 400);
+        }
+
+        const emailResult = await sendReservationEmailWithResend({
+            resendApiKey: env.RESEND_API_KEY,
+            fromEmail: env.FROM_EMAIL,
+            toEmail: env.TO_EMAIL,
+            userName,
+            userEmail,
+            userPhone,
+            servicio,
+            fecha,
+            horaInicio,
+            horaFin,
+            reservationId
+        });
+
+        if (!emailResult.ok) {
+            return jsonResponse({
+                ok: false,
+                message: "No se pudo enviar la notificación de reserva.",
+                detail: emailResult.error || "Sin detalle"
+            }, 500);
+        }
+
+        return jsonResponse({
+            ok: true,
+            message: "Notificación enviada correctamente."
+        });
+
+    } catch (error) {
+        console.error("Error en /api/notificar-reserva:", error);
+
+        return jsonResponse({
+            ok: false,
+            message: "Error interno al notificar reserva."
+        }, 500);
+    }
+}
+
+async function sendReservationEmailWithResend({
+    resendApiKey,
+    fromEmail,
+    toEmail,
+    userName,
+    userEmail,
+    userPhone,
+    servicio,
+    fecha,
+    horaInicio,
+    horaFin,
+    reservationId
+}) {
+    if (!resendApiKey || !fromEmail || !toEmail) {
+        console.error("Faltan variables de entorno para Resend.");
+        return { ok: false, error: "Faltan variables de entorno." };
+    }
+
+    const subject = `Nueva reserva confirmada - ${servicio}`;
+
+    const fechaFormateada = formatDateForEmail(fecha);
+
+    const html = `
+        <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+            <h2>Nueva reserva confirmada</h2>
+
+            <p>Se ha registrado una nueva reserva desde la web de Neyrhyld Martin.</p>
+
+            <hr>
+
+            <p><strong>Cliente:</strong> ${escapeHtml(userName)}</p>
+            <p><strong>Email:</strong> ${escapeHtml(userEmail)}</p>
+            <p><strong>Teléfono:</strong> ${escapeHtml(userPhone || "No informado")}</p>
+
+            <hr>
+
+            <p><strong>Servicio:</strong> ${escapeHtml(servicio)}</p>
+            <p><strong>Fecha:</strong> ${escapeHtml(fechaFormateada)}</p>
+            <p><strong>Horario:</strong> ${escapeHtml(horaInicio)} - ${escapeHtml(horaFin)}</p>
+            <p><strong>ID Reserva:</strong> ${escapeHtml(reservationId)}</p>
+        </div>
+    `;
+
+    const text = `
+Nueva reserva confirmada
+
+Cliente: ${userName}
+Email: ${userEmail}
+Teléfono: ${userPhone || "No informado"}
+
+Servicio: ${servicio}
+Fecha: ${fechaFormateada}
+Horario: ${horaInicio} - ${horaFin}
+ID Reserva: ${reservationId}
+    `;
+
+    const response = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${resendApiKey}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            from: fromEmail,
+            to: [toEmail],
+            reply_to: userEmail,
+            subject,
+            html,
+            text
+        })
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Error Resend notificación reserva:", errorText);
+        return { ok: false, error: errorText };
+    }
+
+    return { ok: true };
+}
+
+function formatDateForEmail(dateString) {
+    const [year, month, day] = dateString.split("-");
+    const date = new Date(Number(year), Number(month) - 1, Number(day));
+
+    return date.toLocaleDateString("es-CL", {
+        weekday: "long",
+        day: "2-digit",
+        month: "long",
+        year: "numeric"
+    });
 }

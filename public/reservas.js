@@ -194,6 +194,7 @@ async function reserveSlot(slotId) {
 
     const slotRef = doc(db, "availability", slotId);
     const reservationRef = doc(collection(db, "reservations"));
+    let reservationPayload = null;
 
     try {
         await runTransaction(db, async (transaction) => {
@@ -209,6 +210,20 @@ async function reserveSlot(slotId) {
                 throw new Error("Esta hora ya no está disponible.");
             }
 
+            reservationPayload = {
+                userId: currentUser.uid,
+                userName: currentUser.displayName || currentProfile.nombre || "",
+                userEmail: currentUser.email || currentProfile.email || "",
+                userPhone: currentProfile.telefono || "",
+                slotId,
+                reservationId: reservationRef.id,
+                fecha: slot.fecha,
+                horaInicio: slot.horaInicio,
+                horaFin: slot.horaFin,
+                servicio: slot.servicio,
+                estado: "confirmada"
+            };
+
             transaction.set(reservationRef, {
                 userId: currentUser.uid,
                 userName: currentUser.displayName || currentProfile.nombre || "",
@@ -220,6 +235,7 @@ async function reserveSlot(slotId) {
                 horaFin: slot.horaFin,
                 servicio: slot.servicio,
                 estado: "confirmada",
+                reservationPayload,
                 createdAt: serverTimestamp()
             });
 
@@ -230,6 +246,8 @@ async function reserveSlot(slotId) {
                 reservedAt: serverTimestamp()
             });
         });
+
+        await notifyReservation(reservationPayload);
 
         alert("✅ Hora reservada correctamente.");
 
@@ -274,4 +292,36 @@ function formatLongDate(dateString) {
 function formatDate(dateString) {
     const [year, month, day] = dateString.split("-");
     return `${day}-${month}-${year}`;
+}
+
+async function notifyReservation(reservationPayload) {
+    if (!reservationPayload) return;
+
+    try {
+        const response = await fetch("/api/notificar-reserva", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                userName: reservationPayload.userName,
+                userEmail: reservationPayload.userEmail,
+                userPhone: reservationPayload.userPhone,
+                servicio: reservationPayload.servicio,
+                fecha: reservationPayload.fecha,
+                horaInicio: reservationPayload.horaInicio,
+                horaFin: reservationPayload.horaFin,
+                reservationId: reservationPayload.reservationId
+            })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.ok) {
+            console.warn("La reserva fue creada, pero no se pudo enviar la notificación:", result);
+        }
+
+    } catch (error) {
+        console.warn("La reserva fue creada, pero falló la notificación:", error);
+    }
 }
