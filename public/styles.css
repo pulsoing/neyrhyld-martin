@@ -1934,3 +1934,15 @@ section {
 .summary-card.pending span {
     color: #9a5b00;
 }
+
+.my-reservation-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    align-items: flex-end;
+}
+
+.request-cancel-btn {
+    font-size: 0.85rem;
+    padding: 0.65rem 1rem;
+}

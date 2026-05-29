@@ -14,7 +14,8 @@ import {
     orderBy,
     onSnapshot,
     runTransaction,
-    serverTimestamp
+    serverTimestamp,
+    updateDoc
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 import { firebaseConfig } from "./firebase-config.js";
@@ -99,12 +100,18 @@ function listenMyReservations(userId) {
         });
 
         const confirmed = reservations.filter(reservation => reservation.estado === "confirmada");
+        const pendingCancellation = reservations.filter(reservation => reservation.estado === "solicitud_cancelacion");
         const cancelled = reservations.filter(reservation => reservation.estado === "cancelada");
 
         list.innerHTML = `
             <div class="my-reservations-group">
                 <h3>Confirmadas</h3>
                 <div id="myConfirmedReservations"></div>
+            </div>
+
+            <div class="my-reservations-group">
+                <h3>Solicitudes de cancelación</h3>
+                <div id="myPendingCancellationReservations"></div>
             </div>
 
             <div class="my-reservations-group">
@@ -117,6 +124,12 @@ function listenMyReservations(userId) {
             document.getElementById("myConfirmedReservations"),
             confirmed,
             "confirmada"
+        );
+
+        renderMyReservationGroup(
+            document.getElementById("myPendingCancellationReservations"),
+            pendingCancellation,
+            "solicitud_cancelacion"
         );
 
         renderMyReservationGroup(
@@ -141,8 +154,14 @@ function listenMyReservations(userId) {
 function renderMyReservationGroup(container, reservations, status) {
     if (!container) return;
 
+    const emptyLabels = {
+        confirmada: "No hay reservas confirmadas.",
+        solicitud_cancelacion: "No hay solicitudes de cancelación.",
+        cancelada: "No hay reservas canceladas."
+    };
+
     if (!reservations.length) {
-        container.innerHTML = `<p class="muted-text">No hay reservas ${status === "confirmada" ? "confirmadas" : "canceladas"}.</p>`;
+        container.innerHTML = `<p class="muted-text">${emptyLabels[status]}</p>`;
         return;
     }
 
@@ -152,6 +171,8 @@ function renderMyReservationGroup(container, reservations, status) {
         const item = document.createElement("div");
         item.className = `my-reservation-card ${status}`;
 
+        const statusLabel = getReservationStatusLabel(status);
+
         item.innerHTML = `
             <div>
                 <span class="my-reservation-service">${reservation.servicio || "Servicio"}</span>
@@ -159,10 +180,27 @@ function renderMyReservationGroup(container, reservations, status) {
                 <p>${reservation.horaInicio} - ${reservation.horaFin}</p>
             </div>
 
-            <span class="my-reservation-status ${status}">
-                ${status === "confirmada" ? "Confirmada" : "Cancelada"}
-            </span>
+            <div class="my-reservation-actions">
+                <span class="my-reservation-status ${status}">
+                    ${statusLabel}
+                </span>
+
+                ${status === "confirmada"
+                ? `<button class="btn btn-secondary-dark request-cancel-btn" data-reservation-id="${reservation.id}">
+                            Solicitar cancelación
+                           </button>`
+                : ""
+            }
+            </div>
         `;
+
+        const requestCancelBtn = item.querySelector(".request-cancel-btn");
+
+        if (requestCancelBtn) {
+            requestCancelBtn.addEventListener("click", () => {
+                requestCancellation(reservation.id);
+            });
+        }
 
         container.appendChild(item);
     });
@@ -425,5 +463,40 @@ async function notifyReservation(reservationPayload) {
 
     } catch (error) {
         console.warn("La reserva fue creada, pero falló la notificación:", error);
+    }
+}
+
+function getReservationStatusLabel(status) {
+    const labels = {
+        confirmada: "Confirmada",
+        solicitud_cancelacion: "Solicitud enviada",
+        cancelada: "Cancelada"
+    };
+
+    return labels[status] || status;
+}
+
+async function requestCancellation(reservationId) {
+    const confirmRequest = confirm(
+        "¿Deseas solicitar la cancelación de esta reserva?\n\nLa hora quedará pendiente hasta que administración confirme la cancelación."
+    );
+
+    if (!confirmRequest) return;
+
+    const reservationRef = doc(db, "reservations", reservationId);
+
+    try {
+        await updateDoc(reservationRef, {
+            estado: "solicitud_cancelacion",
+            cancelRequestedAt: serverTimestamp(),
+            cancelRequestedBy: currentUser.uid,
+            cancelRequestedByEmail: currentUser.email
+        });
+
+        alert("✅ Solicitud de cancelación enviada correctamente.");
+
+    } catch (error) {
+        console.error("Error solicitando cancelación:", error);
+        alert(`❌ No se pudo solicitar la cancelación.\n\n${error.message}`);
     }
 }
