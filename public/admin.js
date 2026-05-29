@@ -199,8 +199,21 @@ function renderAdminDashboard() {
     );
 
     const availableCount = futureSlots.filter(slot => slot.estado === "disponible").length;
-    const reservedCount = futureSlots.filter(slot => slot.estado === "reservada").length;
-    const cancelledReservations = reservationsData.filter(reservation => reservation.estado === "cancelada");
+
+    const pendingCancellationCount = reservationsData.filter(
+        reservation => reservation.estado === "solicitud_cancelacion"
+    ).length;
+
+    const reservedCount = futureSlots.filter(slot => {
+        if (slot.estado !== "reservada") return false;
+
+        const reservation = reservationsById.get(slot.reservationId);
+        return reservation?.estado !== "solicitud_cancelacion";
+    }).length;
+
+    const cancelledReservations = reservationsData.filter(
+        reservation => reservation.estado === "cancelada"
+    );
 
     summary.innerHTML = `
         <div class="summary-grid">
@@ -212,6 +225,11 @@ function renderAdminDashboard() {
             <div class="summary-card reserved">
                 <span>${reservedCount}</span>
                 <p>Reservadas</p>
+            </div>
+
+            <div class="summary-card pending">
+                <span>${pendingCancellationCount}</span>
+                <p>Solicitudes</p>
             </div>
 
             <div class="summary-card cancelled">
@@ -260,14 +278,23 @@ function renderAgendaMatrix(container, days, slots, reservationsById) {
 
                     const clientName = reservation?.userName || "Cliente no informado";
                     const clientEmail = reservation?.userEmail || "Email no informado";
+                    const reservationStatus = reservation?.estado || "confirmada";
+
+                    const chipClass = reservationStatus === "solicitud_cancelacion"
+                        ? "solicitud"
+                        : "reservada";
+
+                    const chipLabel = reservationStatus === "solicitud_cancelacion"
+                        ? "S"
+                        : "R";
 
                     html += `
                         <button 
-                            class="agenda-chip reservada"
-                            title="${escapeHtml(clientName)} - ${escapeHtml(clientEmail)}"
+                            class="agenda-chip ${chipClass}"
+                            title="${escapeHtml(clientName)} - ${escapeHtml(clientEmail)} - ${escapeHtml(getReservationStatusLabel(reservationStatus))}"
                             data-reservation-id="${slot.reservationId || ""}">
                             <span>${slot.horaInicio}</span>
-                            <strong>R</strong>
+                            <strong>${chipLabel}</strong>
                         </button>
                     `;
                 } else {
@@ -288,7 +315,7 @@ function renderAgendaMatrix(container, days, slots, reservationsById) {
 
     container.innerHTML = html;
 
-    container.querySelectorAll(".agenda-chip.reservada").forEach(button => {
+    ccontainer.querySelectorAll(".agenda-chip.reservada, .agenda-chip.solicitud").forEach(button => {
         button.addEventListener("click", () => {
             const reservationId = button.dataset.reservationId;
 
@@ -372,6 +399,16 @@ function escapeHtml(value) {
         .replaceAll("'", "&#039;");
 }
 
+function getReservationStatusLabel(status) {
+    const labels = {
+        confirmada: "Confirmada",
+        solicitud_cancelacion: "Solicitud de cancelación",
+        cancelada: "Cancelada"
+    };
+
+    return labels[status] || status;
+}
+
 function showMessage(element, text, type) {
     if (!element) return;
 
@@ -415,8 +452,8 @@ async function cancelReservation(reservationId) {
                 reservationId
             };
 
-            if (reservation.estado !== "confirmada") {
-                throw new Error("Esta reserva ya no está confirmada.");
+            if (!["confirmada", "solicitud_cancelacion"].includes(reservation.estado)) {
+                throw new Error("Esta reserva no está disponible para cancelación.");
             }
 
             if (!reservation.slotId) {

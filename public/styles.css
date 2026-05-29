@@ -1914,3 +1914,23 @@ section {
         text-align: center;
     }
 }
+
+/* =========================================================
+   ADMIN - SOLICITUD DE CANCELACIÓN
+   ========================================================= */
+
+.agenda-chip.solicitud {
+    background: #fff4e5;
+    color: #9a5b00;
+    border-color: rgba(154, 91, 0, 0.25);
+    cursor: pointer;
+}
+
+.agenda-chip.solicitud:hover {
+    background: #ffe7bf;
+    transform: translateY(-1px);
+}
+
+.summary-card.pending span {
+    color: #9a5b00;
+}
