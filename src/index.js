@@ -17,6 +17,10 @@ export default {
             }, 404);
         }
 
+        if (url.pathname === "/api/notificar-cancelacion" && request.method === "POST") {
+            return handleNotificarCancelacion(request, env);
+        }
+
         return env.ASSETS.fetch(request);
     }
 };
@@ -86,6 +90,141 @@ async function handleContacto(request, env) {
             message: "Error interno al procesar la consulta."
         }, 500);
     }
+}
+
+async function handleNotificarCancelacion(request, env) {
+    try {
+        const body = await request.json();
+
+        const {
+            userName,
+            userEmail,
+            servicio,
+            fecha,
+            horaInicio,
+            horaFin,
+            reservationId
+        } = body;
+
+        if (!userName || !userEmail || !servicio || !fecha || !horaInicio || !horaFin || !reservationId) {
+            return jsonResponse({
+                ok: false,
+                message: "Faltan datos obligatorios para notificar cancelación."
+            }, 400);
+        }
+
+        const emailResult = await sendCancellationEmailWithResend({
+            resendApiKey: env.RESEND_API_KEY,
+            fromEmail: env.FROM_EMAIL,
+            toEmail: userEmail,
+            ccEmail: env.TO_EMAIL,
+            userName,
+            userEmail,
+            servicio,
+            fecha,
+            horaInicio,
+            horaFin,
+            reservationId
+        });
+
+        if (!emailResult.ok) {
+            return jsonResponse({
+                ok: false,
+                message: "No se pudo enviar la notificación de cancelación.",
+                detail: emailResult.error || "Sin detalle"
+            }, 500);
+        }
+
+        return jsonResponse({
+            ok: true,
+            message: "Notificación de cancelación enviada correctamente."
+        });
+
+    } catch (error) {
+        console.error("Error en /api/notificar-cancelacion:", error);
+
+        return jsonResponse({
+            ok: false,
+            message: "Error interno al notificar cancelación."
+        }, 500);
+    }
+}
+
+async function sendCancellationEmailWithResend({
+    resendApiKey,
+    fromEmail,
+    toEmail,
+    ccEmail,
+    userName,
+    servicio,
+    fecha,
+    horaInicio,
+    horaFin,
+    reservationId
+}) {
+    const subject = `Reserva cancelada - ${servicio}`;
+    const fechaFormateada = formatDateForEmail(fecha);
+
+    const html = `
+        <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+            <h2>Reserva cancelada</h2>
+
+            <p>Hola ${escapeHtml(userName)},</p>
+
+            <p>Te informamos que la siguiente reserva fue cancelada por administración:</p>
+
+            <hr>
+
+            <p><strong>Servicio:</strong> ${escapeHtml(servicio)}</p>
+            <p><strong>Fecha:</strong> ${escapeHtml(fechaFormateada)}</p>
+            <p><strong>Horario:</strong> ${escapeHtml(horaInicio)} - ${escapeHtml(horaFin)}</p>
+            <p><strong>ID Reserva:</strong> ${escapeHtml(reservationId)}</p>
+
+            <hr>
+
+            <p>Para coordinar una nueva hora, puedes contactar directamente a Neyrhyld Martin.</p>
+        </div>
+    `;
+
+    const text = `
+Reserva cancelada
+
+Hola ${userName},
+
+Tu reserva fue cancelada por administración.
+
+Servicio: ${servicio}
+Fecha: ${fechaFormateada}
+Horario: ${horaInicio} - ${horaFin}
+ID Reserva: ${reservationId}
+
+Para coordinar una nueva hora, puedes contactar directamente a Neyrhyld Martin.
+    `;
+
+    const response = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${resendApiKey}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            from: fromEmail,
+            to: [toEmail],
+            cc: ccEmail ? [ccEmail] : undefined,
+            reply_to: ccEmail,
+            subject,
+            html,
+            text
+        })
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Error Resend cancelación:", errorText);
+        return { ok: false, error: errorText };
+    }
+
+    return { ok: true };
 }
 
 function jsonResponse(data, status = 200) {

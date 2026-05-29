@@ -393,6 +393,8 @@ async function cancelReservation(reservationId) {
 
     const reservationRef = doc(db, "reservations", reservationId);
 
+    let cancelledReservationPayload = null;
+
     try {
         await runTransaction(db, async (transaction) => {
             const reservationSnap = await transaction.get(reservationRef);
@@ -402,6 +404,16 @@ async function cancelReservation(reservationId) {
             }
 
             const reservation = reservationSnap.data();
+
+            cancelledReservationPayload = {
+                userName: reservation.userName || "Cliente",
+                userEmail: reservation.userEmail || "",
+                servicio: reservation.servicio || "",
+                fecha: reservation.fecha || "",
+                horaInicio: reservation.horaInicio || "",
+                horaFin: reservation.horaFin || "",
+                reservationId
+            };
 
             if (reservation.estado !== "confirmada") {
                 throw new Error("Esta reserva ya no está confirmada.");
@@ -439,6 +451,8 @@ async function cancelReservation(reservationId) {
             });
         });
 
+        await notifyCancellation(cancelledReservationPayload);
+
         alert("✅ Reserva cancelada y hora liberada correctamente.");
 
     } catch (error) {
@@ -450,4 +464,27 @@ async function cancelReservation(reservationId) {
 function formatDate(dateString) {
     const [year, month, day] = dateString.split("-");
     return `${day}-${month}-${year}`;
+}
+
+async function notifyCancellation(payload) {
+    if (!payload || !payload.userEmail) return;
+
+    try {
+        const response = await fetch("/api/notificar-cancelacion", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.ok) {
+            console.warn("La reserva fue cancelada, pero no se pudo notificar por correo:", result);
+        }
+
+    } catch (error) {
+        console.warn("La reserva fue cancelada, pero falló la notificación:", error);
+    }
 }
