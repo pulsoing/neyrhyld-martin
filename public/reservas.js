@@ -493,6 +493,8 @@ async function requestCancellation(reservationId) {
             cancelRequestedByEmail: currentUser.email
         });
 
+        await notifyCancelRequest(reservationId);
+
         alert("✅ Solicitud de cancelación enviada correctamente.");
 
     } catch (error) {
@@ -500,3 +502,44 @@ async function requestCancellation(reservationId) {
         alert(`❌ No se pudo solicitar la cancelación.\n\n${error.message}`);
     }
 }
+
+async function notifyCancelRequest(reservationId) {
+    try {
+        const reservationRef = doc(db, "reservations", reservationId);
+        const reservationSnap = await getDoc(reservationRef);
+
+        if (!reservationSnap.exists()) {
+            console.warn("No se encontró la reserva para notificar solicitud de cancelación.");
+            return;
+        }
+
+        const reservation = reservationSnap.data();
+
+        const response = await fetch("/api/notificar-solicitud-cancelacion", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                userName: reservation.userName || currentUser.displayName || "Cliente",
+                userEmail: reservation.userEmail || currentUser.email || "",
+                userPhone: reservation.userPhone || currentProfile.telefono || "",
+                servicio: reservation.servicio || "",
+                fecha: reservation.fecha || "",
+                horaInicio: reservation.horaInicio || "",
+                horaFin: reservation.horaFin || "",
+                reservationId
+            })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.ok) {
+            console.warn("La solicitud fue registrada, pero no se pudo notificar al admin:", result);
+        }
+
+    } catch (error) {
+        console.warn("La solicitud fue registrada, pero falló la notificación al admin:", error);
+    }
+}
+

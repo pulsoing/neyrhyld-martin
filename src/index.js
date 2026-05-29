@@ -14,6 +14,10 @@ export default {
             return handleNotificarCancelacion(request, env);
         }
 
+        if (url.pathname === "/api/notificar-solicitud-cancelacion" && request.method === "POST") {
+            return handleNotificarSolicitudCancelacion(request, env);
+        }
+
         if (url.pathname.startsWith("/api/")) {
             return jsonResponse({
                 ok: false,
@@ -509,4 +513,151 @@ function formatDateForEmail(dateString) {
         month: "long",
         year: "numeric"
     });
+}
+
+async function handleNotificarSolicitudCancelacion(request, env) {
+    try {
+        const body = await request.json();
+
+        const {
+            userName,
+            userEmail,
+            userPhone,
+            servicio,
+            fecha,
+            horaInicio,
+            horaFin,
+            reservationId
+        } = body;
+
+        if (!userName || !userEmail || !servicio || !fecha || !horaInicio || !horaFin || !reservationId) {
+            return jsonResponse({
+                ok: false,
+                message: "Faltan datos obligatorios para notificar solicitud de cancelación."
+            }, 400);
+        }
+
+        const emailResult = await sendCancelRequestEmailWithResend({
+            resendApiKey: env.RESEND_API_KEY,
+            fromEmail: env.FROM_EMAIL,
+            toEmail: env.TO_EMAIL,
+            userName,
+            userEmail,
+            userPhone,
+            servicio,
+            fecha,
+            horaInicio,
+            horaFin,
+            reservationId
+        });
+
+        if (!emailResult.ok) {
+            return jsonResponse({
+                ok: false,
+                message: "No se pudo enviar la notificación de solicitud de cancelación.",
+                detail: emailResult.error || "Sin detalle"
+            }, 500);
+        }
+
+        return jsonResponse({
+            ok: true,
+            message: "Notificación de solicitud de cancelación enviada correctamente."
+        });
+
+    } catch (error) {
+        console.error("Error en /api/notificar-solicitud-cancelacion:", error);
+
+        return jsonResponse({
+            ok: false,
+            message: "Error interno al notificar solicitud de cancelación."
+        }, 500);
+    }
+}
+
+async function sendCancelRequestEmailWithResend({
+    resendApiKey,
+    fromEmail,
+    toEmail,
+    userName,
+    userEmail,
+    userPhone,
+    servicio,
+    fecha,
+    horaInicio,
+    horaFin,
+    reservationId
+}) {
+    if (!resendApiKey || !fromEmail || !toEmail) {
+        console.error("Faltan variables de entorno para Resend.");
+        return { ok: false, error: "Faltan variables de entorno." };
+    }
+
+    const subject = `Solicitud de cancelación - ${servicio}`;
+    const fechaFormateada = formatDateForEmail(fecha);
+
+    const html = `
+        <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+            <h2>Solicitud de cancelación de reserva</h2>
+
+            <p>Un cliente solicitó cancelar una reserva desde la web de Neyrhyld Martin.</p>
+
+            <hr>
+
+            <p><strong>Cliente:</strong> ${escapeHtml(userName)}</p>
+            <p><strong>Email:</strong> ${escapeHtml(userEmail)}</p>
+            <p><strong>Teléfono:</strong> ${escapeHtml(userPhone || "No informado")}</p>
+
+            <hr>
+
+            <p><strong>Servicio:</strong> ${escapeHtml(servicio)}</p>
+            <p><strong>Fecha:</strong> ${escapeHtml(fechaFormateada)}</p>
+            <p><strong>Horario:</strong> ${escapeHtml(horaInicio)} - ${escapeHtml(horaFin)}</p>
+            <p><strong>ID Reserva:</strong> ${escapeHtml(reservationId)}</p>
+
+            <hr>
+
+            <p>Para confirmar la cancelación y liberar la hora, ingresa al panel administrativo.</p>
+        </div>
+    `;
+
+    const text = `
+Solicitud de cancelación de reserva
+
+Un cliente solicitó cancelar una reserva.
+
+Cliente: ${userName}
+Email: ${userEmail}
+Teléfono: ${userPhone || "No informado"}
+
+Servicio: ${servicio}
+Fecha: ${fechaFormateada}
+Horario: ${horaInicio} - ${horaFin}
+ID Reserva: ${reservationId}
+
+Para confirmar la cancelación y liberar la hora, ingresa al panel administrativo.
+    `;
+
+    const response = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${resendApiKey}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            from: fromEmail,
+            to: [toEmail],
+            reply_to: userEmail,
+            subject,
+            html,
+            text
+        })
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Error Resend solicitud cancelación:", errorText);
+        return { ok: false, error: errorText };
+    }
+
+    return { ok: true };
 }
