@@ -27,10 +27,6 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
-const ADMIN_EMAILS = [
-    "pulsoing.cl@gmail.com",
-    "neyrhyldmartin.estetica@gmail.com"
-];
 
 document.addEventListener("DOMContentLoaded", () => {
     const loginBtn = document.getElementById("loginGoogleBtn");
@@ -96,7 +92,7 @@ async function createOrUpdateUserProfile(user) {
     const userRef = doc(db, "users", user.uid);
     const userSnap = await getDoc(userRef);
 
-    const rol = ADMIN_EMAILS.includes(user.email) ? "admin" : "cliente";
+    const rol = "cliente";
 
     if (!userSnap.exists()) {
         const profile = {
@@ -104,7 +100,7 @@ async function createOrUpdateUserProfile(user) {
             nombre: user.displayName || "",
             email: user.email || "",
             foto: user.photoURL || "",
-            rol,
+            rol: "cliente",
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp()
         };
@@ -119,7 +115,6 @@ async function createOrUpdateUserProfile(user) {
         nombre: user.displayName || existingProfile.nombre || "",
         email: user.email || existingProfile.email || "",
         foto: user.photoURL || existingProfile.foto || "",
-        rol: existingProfile.rol || rol,
         updatedAt: serverTimestamp()
     };
 
