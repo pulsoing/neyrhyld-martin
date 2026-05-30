@@ -1946,3 +1946,49 @@ section {
     font-size: 0.85rem;
     padding: 0.65rem 1rem;
 }
+
+/* =========================================================
+   ESTADOS UNIFICADOS
+   ========================================================= */
+
+.agenda-chip.disponible,
+.my-reservation-status.disponible {
+    background: #e8f5ee;
+    color: #2f7d4f;
+    border-color: rgba(47, 125, 79, 0.18);
+}
+
+.agenda-chip.reservada,
+.status-pill.reserved,
+.my-reservation-status.confirmada {
+    background: #fff4e5;
+    color: #9a5b00;
+    border-color: rgba(154, 91, 0, 0.2);
+}
+
+.agenda-chip.solicitud,
+.my-reservation-status.solicitud_cancelacion {
+    background: #fff4e5;
+    color: #9a5b00;
+    border-color: rgba(154, 91, 0, 0.25);
+}
+
+.status-pill.cancelled,
+.my-reservation-status.cancelada {
+    background: #fdecec;
+    color: #b42318;
+    border-color: rgba(180, 35, 24, 0.18);
+}
+
+.summary-card.available span {
+    color: #2f7d4f;
+}
+
+.summary-card.reserved span,
+.summary-card.pending span {
+    color: #9a5b00;
+}
+
+.summary-card.cancelled span {
+    color: #b42318;
+}

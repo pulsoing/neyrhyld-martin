@@ -284,14 +284,13 @@ function renderAgendaMatrix(container, days, slots, reservationsById) {
                         ? "solicitud"
                         : "reservada";
 
-                    const chipLabel = reservationStatus === "solicitud_cancelacion"
-                        ? "S"
-                        : "R";
+                    const chipLabel = getAvailabilityChipLabel(slot.estado, reservationStatus);
+                    const statusLabel = getReservationStatusLabel(reservationStatus);
 
                     html += `
                         <button 
                             class="agenda-chip ${chipClass}"
-                            title="${escapeHtml(clientName)} - ${escapeHtml(clientEmail)} - ${escapeHtml(getReservationStatusLabel(reservationStatus))}"
+                            title="${escapeHtml(statusLabel)} - ${escapeHtml(clientName)} - ${escapeHtml(clientEmail)}"
                             data-reservation-id="${slot.reservationId || ""}">
                             <span>${slot.horaInicio}</span>
                             <strong>${chipLabel}</strong>
@@ -299,9 +298,11 @@ function renderAgendaMatrix(container, days, slots, reservationsById) {
                     `;
                 } else {
                     html += `
-                        <span class="agenda-chip disponible">
+                        <span 
+                            class="agenda-chip disponible"
+                            title="${escapeHtml(getAvailabilityStatusLabel(slot.estado))}">
                             <span>${slot.horaInicio}</span>
-                            <strong>D</strong>
+                            <strong>${getAvailabilityChipLabel(slot.estado)}</strong>
                         </span>
                     `;
                 }
@@ -353,7 +354,7 @@ function renderCancelledReservations(list, reservations) {
                     <p><strong>Servicio:</strong> ${reservation.servicio}</p>
                     <p><strong>Cliente:</strong> ${reservation.userName || "No informado"}</p>
                     <p><strong>Email:</strong> ${reservation.userEmail || "No informado"}</p>
-                    <p><strong>Estado:</strong> cancelada</p>
+                    <p><strong>Estado:</strong> ${getReservationStatusLabel(reservation.estado)}</p>
                 </div>
 
                 <div class="reservation-actions">
@@ -399,6 +400,29 @@ function escapeHtml(value) {
         .replaceAll("'", "&#039;");
 }
 
+
+function getAvailabilityStatusLabel(status) {
+    const labels = {
+        disponible: "Disponible",
+        reservada: "Reservada",
+        bloqueada: "Bloqueada"
+    };
+
+    return labels[status] || status || "Sin estado";
+}
+
+function getAvailabilityChipLabel(status, reservationStatus = null) {
+    if (reservationStatus === "solicitud_cancelacion") return "S";
+
+    const labels = {
+        disponible: "D",
+        reservada: "R",
+        bloqueada: "B"
+    };
+
+    return labels[status] || "?";
+}
+
 function getReservationStatusLabel(status) {
     const labels = {
         confirmada: "Confirmada",
@@ -406,8 +430,9 @@ function getReservationStatusLabel(status) {
         cancelada: "Cancelada"
     };
 
-    return labels[status] || status;
+    return labels[status] || status || "Sin estado";
 }
+
 
 function showMessage(element, text, type) {
     if (!element) return;

@@ -187,7 +187,7 @@ function renderMyReservationGroup(container, reservations, status) {
 
                 ${status === "confirmada"
                 ? `<button class="btn btn-secondary-dark request-cancel-btn" data-reservation-id="${reservation.id}">
-                            Solicitar cancelación
+                            Solicitar cancelar hora
                            </button>`
                 : ""
             }
@@ -478,7 +478,7 @@ function getReservationStatusLabel(status) {
 
 async function requestCancellation(reservationId) {
     const confirmRequest = confirm(
-        "¿Deseas solicitar la cancelación de esta reserva?\n\nLa hora quedará pendiente hasta que administración confirme la cancelación."
+        "¿Deseas solicitar la cancelación de esta hora?\n\nLa reserva quedará pendiente hasta que administración confirme la cancelación."
     );
 
     if (!confirmRequest) return;
