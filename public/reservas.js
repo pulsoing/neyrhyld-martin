@@ -295,13 +295,13 @@ function listenAvailableSlots() {
 
                 item.innerHTML = `
                     <div class="client-slot-main">
-                        <button class="btn btn-primary client-reserve-btn" data-slot-id="${slot.id}">
-                            Reservar esta hora
-                        </button>
+                        <span class="client-slot-service">Hora disponible</span>
+                        <strong>${slot.horaInicio} - ${slot.horaFin}</strong>
+                        <p>Completa tus datos y selecciona el servicio al reservar.</p>
                     </div>
 
                     <button class="btn btn-primary client-reserve-btn" data-slot-id="${slot.id}">
-                        Reservar hora
+                        Reservar esta hora
                     </button>
                 `;
 

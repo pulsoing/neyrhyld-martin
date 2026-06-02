@@ -242,9 +242,11 @@ function renderAdminDashboard() {
 }
 
 function renderAgendaMatrix(container, days, slots, reservationsById) {
+    const timeRows = getTimeRows(days, slots);
+
     let html = `
         <div class="agenda-grid" style="--agenda-days: ${days.length};">
-            <div class="agenda-head service-head">Servicio</div>
+            <div class="agenda-head service-head">Horario</div>
     `;
 
     days.forEach(day => {
@@ -256,12 +258,34 @@ function renderAgendaMatrix(container, days, slots, reservationsById) {
         `;
     });
 
-    SERVICES.forEach(service => {
-        html += `<div class="agenda-service">${service}</div>`;
+    if (!timeRows.length) {
+        html += `
+            <div class="agenda-service">Sin horarios</div>
+        `;
+
+        days.forEach(() => {
+            html += `
+                <div class="agenda-cell">
+                    <span class="agenda-empty">—</span>
+                </div>
+            `;
+        });
+
+        html += `</div>`;
+        container.innerHTML = html;
+        return;
+    }
+
+    timeRows.forEach(timeRow => {
+        html += `<div class="agenda-service">${timeRow.label}</div>`;
 
         days.forEach(day => {
             const cellSlots = slots
-                .filter(slot => slot.servicio === service && slot.fecha === day.date)
+                .filter(slot =>
+                    slot.fecha === day.date &&
+                    slot.horaInicio === timeRow.horaInicio &&
+                    slot.horaFin === timeRow.horaFin
+                )
                 .sort((a, b) => a.horaInicio.localeCompare(b.horaInicio));
 
             html += `<div class="agenda-cell">`;
@@ -274,8 +298,24 @@ function renderAgendaMatrix(container, days, slots, reservationsById) {
                 if (slot.estado === "reservada") {
                     const reservation = reservationsById.get(slot.reservationId);
 
-                    const clientName = reservation?.userName || "Cliente no informado";
-                    const clientEmail = reservation?.userEmail || "Email no informado";
+                    const clientName =
+                        reservation?.customerName ||
+                        reservation?.userName ||
+                        "Cliente no informado";
+
+                    const clientEmail =
+                        reservation?.userEmail ||
+                        "Email no informado";
+
+                    const clientPhone =
+                        reservation?.customerPhone ||
+                        reservation?.userPhone ||
+                        "Teléfono no informado";
+
+                    const service =
+                        reservation?.servicio ||
+                        "Servicio no informado";
+
                     const reservationStatus = reservation?.estado || "confirmada";
 
                     const chipClass = reservationStatus === "solicitud_cancelacion"
@@ -288,7 +328,7 @@ function renderAgendaMatrix(container, days, slots, reservationsById) {
                     html += `
                         <button 
                             class="agenda-chip ${chipClass}"
-                            title="${escapeHtml(statusLabel)} - ${escapeHtml(clientName)} - ${escapeHtml(clientEmail)}"
+                            title="${escapeHtml(statusLabel)} - ${escapeHtml(service)} - ${escapeHtml(clientName)} - ${escapeHtml(clientPhone)} - ${escapeHtml(clientEmail)}"
                             data-reservation-id="${slot.reservationId || ""}">
                             <span>${slot.horaInicio}</span>
                             <strong>${chipLabel}</strong>
@@ -379,6 +419,29 @@ function getNextDays(numberOfDays) {
     }
 
     return days;
+}
+
+function getTimeRows(days, slots) {
+    const validDates = days.map(day => day.date);
+
+    const rowsMap = new Map();
+
+    slots
+        .filter(slot => validDates.includes(slot.fecha))
+        .forEach(slot => {
+            const key = `${slot.horaInicio}-${slot.horaFin}`;
+
+            if (!rowsMap.has(key)) {
+                rowsMap.set(key, {
+                    horaInicio: slot.horaInicio,
+                    horaFin: slot.horaFin,
+                    label: `${slot.horaInicio} - ${slot.horaFin}`
+                });
+            }
+        });
+
+    return Array.from(rowsMap.values())
+        .sort((a, b) => a.horaInicio.localeCompare(b.horaInicio));
 }
 
 function toLocalDateString(date) {
