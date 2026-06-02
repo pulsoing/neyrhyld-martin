@@ -295,9 +295,9 @@ function listenAvailableSlots() {
 
                 item.innerHTML = `
                     <div class="client-slot-main">
-                        <span class="client-slot-service">${slot.servicio}</span>
-                        <strong>${slot.horaInicio} - ${slot.horaFin}</strong>
-                        <p>Hora disponible para reserva.</p>
+                        <button class="btn btn-primary client-reserve-btn" data-slot-id="${slot.id}">
+                            Reservar esta hora
+                        </button>
                     </div>
 
                     <button class="btn btn-primary client-reserve-btn" data-slot-id="${slot.id}">
@@ -306,7 +306,7 @@ function listenAvailableSlots() {
                 `;
 
                 const reserveBtn = item.querySelector(".client-reserve-btn");
-                reserveBtn.addEventListener("click", () => reserveSlot(slot.id));
+                reserveBtn.addEventListener("click", () => openReservationForm(slot));
 
                 grid.appendChild(item);
             });
@@ -326,7 +326,7 @@ function listenAvailableSlots() {
         `;
     });
 }
-async function reserveSlot(slotId) {
+async function reserveSlot(slotId, reservationDetails) {
     if (!currentUser || !currentProfile) {
         alert("Debes iniciar sesión para reservar.");
         window.location.href = "login.html";
@@ -340,6 +340,11 @@ async function reserveSlot(slotId) {
     const slotRef = doc(db, "availability", slotId);
     const reservationRef = doc(collection(db, "reservations"));
     let reservationPayload = null;
+
+    if (!reservationDetails?.customerName || !reservationDetails?.customerPhone || !reservationDetails?.servicio) {
+        alert("Faltan datos para completar la reserva.");
+        return;
+    }
 
     try {
         await runTransaction(db, async (transaction) => {
@@ -358,29 +363,37 @@ async function reserveSlot(slotId) {
             reservationPayload = {
                 userId: currentUser.uid,
                 userName: currentUser.displayName || currentProfile.nombre || "",
+                customerName: reservationDetails.customerName,
                 userEmail: currentUser.email || currentProfile.email || "",
-                userPhone: currentProfile.telefono || "",
+                userPhone: reservationDetails.customerPhone,
+                customerPhone: reservationDetails.customerPhone,
                 slotId,
                 reservationId: reservationRef.id,
                 fecha: slot.fecha,
                 horaInicio: slot.horaInicio,
                 horaFin: slot.horaFin,
-                servicio: slot.servicio,
+                servicio: reservationDetails.servicio,
+                estado: "confirmada"
+            };
+
+            reservationPayload = {
+                userId: currentUser.uid,
+                userName: currentUser.displayName || currentProfile.nombre || "",
+                customerName: reservationDetails.customerName,
+                userEmail: currentUser.email || currentProfile.email || "",
+                userPhone: reservationDetails.customerPhone,
+                customerPhone: reservationDetails.customerPhone,
+                slotId,
+                reservationId: reservationRef.id,
+                fecha: slot.fecha,
+                horaInicio: slot.horaInicio,
+                horaFin: slot.horaFin,
+                servicio: reservationDetails.servicio,
                 estado: "confirmada"
             };
 
             transaction.set(reservationRef, {
-                userId: currentUser.uid,
-                userName: currentUser.displayName || currentProfile.nombre || "",
-                userEmail: currentUser.email || currentProfile.email || "",
-                userPhone: currentProfile.telefono || "",
-                slotId,
-                fecha: slot.fecha,
-                horaInicio: slot.horaInicio,
-                horaFin: slot.horaFin,
-                servicio: slot.servicio,
-                estado: "confirmada",
-                reservationPayload,
+                ...reservationPayload,
                 createdAt: serverTimestamp()
             });
 
@@ -543,3 +556,52 @@ async function notifyCancelRequest(reservationId) {
     }
 }
 
+function openReservationForm(slot) {
+    const customerName = prompt("Ingresa tu nombre para la reserva:");
+
+    if (!customerName || !customerName.trim()) {
+        alert("Debes ingresar tu nombre para reservar.");
+        return;
+    }
+
+    const customerPhone = prompt("Ingresa tu teléfono o WhatsApp:");
+
+    if (!customerPhone || !customerPhone.trim()) {
+        alert("Debes ingresar tu teléfono para reservar.");
+        return;
+    }
+
+    const servicio = prompt(
+        "Ingresa el servicio que deseas:\n\n" +
+        "1. Cosmetología facial\n" +
+        "2. Estética corporal\n" +
+        "3. Masaje terapéutico\n" +
+        "4. Terapia complementaria\n" +
+        "5. Gift Card Spa\n" +
+        "6. Consulta general"
+    );
+
+    if (!servicio || !servicio.trim()) {
+        alert("Debes ingresar el servicio que deseas reservar.");
+        return;
+    }
+
+    reserveSlot(slot.id, {
+        customerName: customerName.trim(),
+        customerPhone: customerPhone.trim(),
+        servicio: normalizeServiceInput(servicio.trim())
+    });
+}
+
+function normalizeServiceInput(value) {
+    const services = {
+        "1": "Cosmetología facial",
+        "2": "Estética corporal",
+        "3": "Masaje terapéutico",
+        "4": "Terapia complementaria",
+        "5": "Gift Card Spa",
+        "6": "Consulta general"
+    };
+
+    return services[value] || value;
+}

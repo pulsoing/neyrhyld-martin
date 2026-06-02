@@ -92,10 +92,9 @@ function initAvailabilityForm() {
         const fecha = document.getElementById("fecha").value;
         const horaInicio = document.getElementById("horaInicio").value;
         const horaFin = document.getElementById("horaFin").value;
-        const servicio = document.getElementById("servicio").value;
 
-        if (!fecha || !horaInicio || !horaFin || !servicio) {
-            showMessage(message, "Completa todos los campos.", "error");
+        if (!fecha || !horaInicio || !horaFin) {
+            showMessage(message, "Completa fecha, hora inicio y hora fin.", "error");
             return;
         }
 
@@ -109,7 +108,6 @@ function initAvailabilityForm() {
                 fecha,
                 horaInicio,
                 horaFin,
-                servicio,
                 estado: "disponible",
                 createdAt: serverTimestamp(),
                 createdBy: currentAdminUser.uid,
