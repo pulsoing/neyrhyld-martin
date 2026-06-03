@@ -326,14 +326,18 @@ function renderAgendaMatrix(container, days, slots, reservationsById) {
                     const statusLabel = getReservationStatusLabel(reservationStatus);
 
                     html += `
-                        <button 
-                            class="agenda-chip ${chipClass}"
-                            title="${escapeHtml(statusLabel)} - ${escapeHtml(service)} - ${escapeHtml(clientName)} - ${escapeHtml(clientPhone)} - ${escapeHtml(clientEmail)}"
-                            data-reservation-id="${slot.reservationId || ""}">
-                            <span>${slot.horaInicio}</span>
-                            <strong>${chipLabel}</strong>
-                        </button>
-                    `;
+                            <button 
+                                class="agenda-chip ${chipClass}"
+                                data-tooltip="Estado: ${escapeHtml(statusLabel)}
+                                Servicio: ${escapeHtml(service)}
+                                Cliente: ${escapeHtml(clientName)}
+                                Teléfono: ${escapeHtml(clientPhone)}
+                                Email: ${escapeHtml(clientEmail)}"
+                                data-reservation-id="${slot.reservationId || ""}">
+                                <span>${slot.horaInicio}</span>
+                                <strong>${chipLabel}</strong>
+                            </button>
+                        `;
                 } else {
                     html += `
                         <span 
