@@ -2110,3 +2110,218 @@ section {
         width: 100%;
     }
 }
+
+/* =========================================================
+   GIFT CARD - VISTA IMPRIMIBLE
+   ========================================================= */
+
+.giftcard-page-body {
+    background: #fbf7f2;
+}
+
+.giftcard-page {
+    min-height: 100vh;
+    padding: 3rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.giftcard-loading {
+    font-weight: 600;
+    color: var(--color-text-light);
+}
+
+.giftcard-printable {
+    width: 100%;
+    max-width: 1120px;
+}
+
+.giftcard-bg {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    border-radius: 34px;
+    padding: 3rem;
+    background:
+        linear-gradient(rgba(255, 250, 246, 0.78), rgba(255, 250, 246, 0.78)),
+        url("assets/Giftcard.png");
+    background-size: cover;
+    background-position: center;
+    border: 1px solid rgba(184, 139, 106, 0.35);
+    box-shadow: var(--shadow-hover);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.giftcard-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 28px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.giftcard-brand {
+    text-align: center;
+    margin-left: 32%;
+}
+
+.giftcard-kicker {
+    color: var(--color-sage);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.giftcard-brand h1 {
+    font-family: var(--font-title);
+    font-size: clamp(2.4rem, 5vw, 5rem);
+    color: #7b5536;
+    line-height: 1.05;
+}
+
+.giftcard-brand h2 {
+    font-family: var(--font-title);
+    font-size: clamp(2.2rem, 4vw, 4rem);
+    letter-spacing: 0.22em;
+    color: #65735d;
+    text-transform: uppercase;
+    margin-top: 0.8rem;
+}
+
+.giftcard-subtitle {
+    font-family: var(--font-title);
+    color: #c7836f;
+    font-style: italic;
+    font-size: 1.35rem;
+    margin-top: 0.5rem;
+}
+
+.giftcard-data {
+    width: 54%;
+    margin-left: auto;
+    margin-top: 1rem;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(184, 139, 106, 0.22);
+    border-radius: 22px;
+    padding: 1.2rem 1.5rem;
+    backdrop-filter: blur(3px);
+}
+
+.giftcard-row {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 1rem;
+    border-bottom: 1px solid rgba(184, 139, 106, 0.18);
+    padding: 0.45rem 0;
+}
+
+.giftcard-row:last-child {
+    border-bottom: none;
+}
+
+.giftcard-row span,
+.giftcard-footer-data span {
+    color: var(--color-primary-dark);
+    font-weight: 700;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.giftcard-row strong,
+.giftcard-footer-data strong {
+    color: var(--color-text);
+    font-weight: 600;
+}
+
+.giftcard-message {
+    text-align: center;
+    color: #65735d;
+    font-family: var(--font-title);
+    font-style: italic;
+    font-size: 1.15rem;
+    margin-top: 0.8rem;
+}
+
+.giftcard-footer-data {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.8rem;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(184, 139, 106, 0.22);
+    border-radius: 20px;
+    padding: 1rem;
+    backdrop-filter: blur(3px);
+}
+
+.giftcard-footer-data div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.giftcard-actions {
+    margin-top: 1.5rem;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+    .giftcard-bg {
+        aspect-ratio: auto;
+        min-height: 780px;
+        padding: 1.5rem;
+    }
+
+    .giftcard-brand {
+        margin-left: 0;
+    }
+
+    .giftcard-data {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .giftcard-footer-data {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media print {
+    body {
+        background: #ffffff;
+    }
+
+    .no-print,
+    .header {
+        display: none !important;
+    }
+
+    .giftcard-page {
+        padding: 0;
+        min-height: auto;
+    }
+
+    .giftcard-printable {
+        max-width: none;
+        width: 100%;
+    }
+
+    .giftcard-bg {
+        box-shadow: none;
+        border-radius: 0;
+        border: none;
+        width: 100%;
+        height: 100vh;
+        aspect-ratio: auto;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+}

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gift Card | Neyrhyld Martin</title>
+
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+</head>
+
+<body class="giftcard-page-body">
+
+    <main class="giftcard-page">
+
+        <div id="giftcardLoading" class="giftcard-loading">
+            Cargando Gift Card...
+        </div>
+
+        <section id="giftcardPrintable" class="giftcard-printable" style="display: none;">
+
+            <div class="giftcard-bg">
+                <div class="giftcard-inner">
+
+                    <div class="giftcard-brand">
+                        <p class="giftcard-kicker">Cosmetología y Estética Integrativa</p>
+                        <h1>Neyrhyld Martin</h1>
+                        <h2>Gift Card</h2>
+                        <p class="giftcard-subtitle">Regala bienestar, calma y cuidado</p>
+                    </div>
+
+                    <div class="giftcard-data">
+                        <div class="giftcard-row">
+                            <span>Para</span>
+                            <strong id="gcParaNombre">-</strong>
+                        </div>
+
+                        <div class="giftcard-row">
+                            <span>RUT</span>
+                            <strong id="gcRut">-</strong>
+                        </div>
+
+                        <div class="giftcard-row">
+                            <span>Correo</span>
+                            <strong id="gcCorreo">-</strong>
+                        </div>
+
+                        <div class="giftcard-row">
+                            <span>Vale por</span>
+                            <strong id="gcValePor">-</strong>
+                        </div>
+
+                        <div class="giftcard-message" id="gcMensaje">
+                            Regala bienestar, calma y cuidado
+                        </div>
+                    </div>
+
+                    <div class="giftcard-footer-data">
+                        <div>
+                            <span>Código</span>
+                            <strong id="gcCode">-</strong>
+                        </div>
+
+                        <div>
+                            <span>Emisión</span>
+                            <strong id="gcFechaEmision">-</strong>
+                        </div>
+
+                        <div>
+                            <span>Válida hasta</span>
+                            <strong id="gcFechaVencimiento">Sin vencimiento</strong>
+                        </div>
+
+                        <div>
+                            <span>Estado</span>
+                            <strong id="gcEstado">-</strong>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </section>
+
+        <div id="giftcardActions" class="giftcard-actions no-print" style="display: none;">
+            <button id="printGiftcardBtn" class="btn btn-primary">
+                <i class="fas fa-print"></i>
+                Imprimir Gift Card
+            </button>
+
+            <a href="giftcard-admin.html" class="btn btn-secondary-dark">
+                Volver a Gift Cards
+            </a>
+        </div>
+
+    </main>
+
+    <script type="module" src="giftcard.js"></script>
+
+</body>
+
+</html>
