@@ -557,39 +557,100 @@ async function notifyCancelRequest(reservationId) {
 }
 
 function openReservationForm(slot) {
-    const customerName = prompt("Ingresa tu nombre para la reserva:");
+    const existingModal = document.getElementById("reservationModal");
 
-    if (!customerName || !customerName.trim()) {
-        alert("Debes ingresar tu nombre para reservar.");
-        return;
+    if (existingModal) {
+        existingModal.remove();
     }
 
-    const customerPhone = prompt("Ingresa tu teléfono o WhatsApp:");
+    const modal = document.createElement("div");
+    modal.id = "reservationModal";
+    modal.className = "reservation-modal-overlay";
 
-    if (!customerPhone || !customerPhone.trim()) {
-        alert("Debes ingresar tu teléfono para reservar.");
-        return;
-    }
+    modal.innerHTML = `
+        <div class="reservation-modal">
+            <button type="button" class="reservation-modal-close" id="closeReservationModal">
+                &times;
+            </button>
 
-    const servicio = prompt(
-        "Ingresa el servicio que deseas:\n\n" +
-        "1. Cosmetología facial\n" +
-        "2. Estética corporal\n" +
-        "3. Masaje terapéutico\n" +
-        "4. Terapia complementaria\n" +
-        "5. Gift Card Spa\n" +
-        "6. Consulta general"
-    );
+            <p class="section-kicker">Confirmar reserva</p>
+            <h2>Completa tus datos</h2>
 
-    if (!servicio || !servicio.trim()) {
-        alert("Debes ingresar el servicio que deseas reservar.");
-        return;
-    }
+            <p class="reservation-modal-time">
+                <strong>Horario:</strong> ${slot.horaInicio} - ${slot.horaFin}
+            </p>
 
-    reserveSlot(slot.id, {
-        customerName: customerName.trim(),
-        customerPhone: customerPhone.trim(),
-        servicio: normalizeServiceInput(servicio.trim())
+            <form id="reservationDetailsForm" class="reservation-details-form">
+                <label for="reservationCustomerName">Nombre</label>
+                <input 
+                    type="text" 
+                    id="reservationCustomerName" 
+                    placeholder="Tu nombre" 
+                    value="${escapeHtml(currentUser.displayName || currentProfile.nombre || "")}"
+                    required
+                >
+
+                <label for="reservationCustomerPhone">Teléfono / WhatsApp</label>
+                <input 
+                    type="tel" 
+                    id="reservationCustomerPhone" 
+                    placeholder="+56 9..." 
+                    value="${escapeHtml(currentProfile.telefono || "")}"
+                    required
+                >
+
+                <label for="reservationService">Servicio</label>
+                <select id="reservationService" required>
+                    <option value="">Selecciona un servicio</option>
+                    <option value="Cosmetología facial">Cosmetología facial</option>
+                    <option value="Estética corporal">Estética corporal</option>
+                    <option value="Masaje terapéutico">Masaje terapéutico</option>
+                    <option value="Terapia complementaria">Terapia complementaria</option>
+                    <option value="Gift Card Spa">Gift Card Spa</option>
+                    <option value="Consulta general">Consulta general</option>
+                </select>
+
+                <button type="submit" class="btn btn-primary">
+                    Confirmar reserva
+                </button>
+            </form>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    const closeBtn = document.getElementById("closeReservationModal");
+    const form = document.getElementById("reservationDetailsForm");
+
+    closeBtn.addEventListener("click", () => {
+        modal.remove();
+    });
+
+    modal.addEventListener("click", (event) => {
+        if (event.target === modal) {
+            modal.remove();
+        }
+    });
+
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const customerName = document.getElementById("reservationCustomerName").value.trim();
+        const customerPhone = document.getElementById("reservationCustomerPhone").value.trim();
+        const servicio = document.getElementById("reservationService").value;
+
+        if (!customerName || !customerPhone || !servicio) {
+            alert("Completa nombre, teléfono y servicio para reservar.");
+            return;
+        }
+
+        modal.remove();
+
+        await reserveSlot(slot.id, {
+            customerName,
+            customerPhone,
+            servicio
+        });
     });
 }
 
@@ -604,4 +665,13 @@ function normalizeServiceInput(value) {
     };
 
     return services[value] || value;
+}
+
+function escapeHtml(value) {
+    return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
 }
