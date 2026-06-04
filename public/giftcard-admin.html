@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gift Cards | Administración</title>
+
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <a href="index.html" class="logo-link" aria-label="Inicio Neyrhyld Martin">
+                        <img src="assets/logo_neymartin_estetica.png"
+                            alt="Neyrhyld Martin Cosmetología y Estética Integrativa" class="logo-img">
+
+                        <div class="brand-text">
+                            <span class="brand-name">Neyrhyld Martin</span>
+                            <span class="brand-subtitle">Estética Integrativa</span>
+                        </div>
+                    </a>
+                </div>
+
+                <ul class="nav-menu">
+                    <li><a href="admin.html">Agenda</a></li>
+                    <li><a href="reservas.html">Reservas</a></li>
+                    <li><a href="login.html">Mi cuenta</a></li>
+                </ul>
+
+                <div class="hamburger" aria-label="Abrir menú de navegación">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="panel-page">
+        <section class="panel-card">
+            <p class="section-kicker">Panel Administrativo</p>
+            <h1>Generar Gift Card</h1>
+
+            <p id="giftcardAuthStatus">Validando permisos...</p>
+
+            <div id="giftcardAdminContent" style="display: none;">
+
+                <div class="admin-section giftcard-form-section">
+                    <h2><i class="fas fa-gift"></i> Nueva Gift Card</h2>
+
+                    <form id="giftcardForm" class="admin-form">
+                        <label for="paraNombre">Para / Nombre</label>
+                        <input type="text" id="paraNombre" placeholder="Nombre de quien recibe" required>
+
+                        <label for="rut">RUT</label>
+                        <input type="text" id="rut" placeholder="12.345.678-9" required>
+
+                        <label for="correo">Correo</label>
+                        <input type="email" id="correo" placeholder="correo@ejemplo.com" required>
+
+                        <label for="valePor">Vale por</label>
+                        <select id="valePor" required>
+                            <option value="">Selecciona una opción</option>
+                            <option value="Cosmetología facial">Cosmetología facial</option>
+                            <option value="Estética corporal">Estética corporal</option>
+                            <option value="Masaje terapéutico">Masaje terapéutico</option>
+                            <option value="Terapia complementaria">Terapia complementaria</option>
+                            <option value="Gift Card Spa">Gift Card Spa</option>
+                            <option value="Consulta general">Consulta general</option>
+                            <option value="Experiencia de bienestar">Experiencia de bienestar</option>
+                        </select>
+
+                        <label for="mensaje">Mensaje opcional</label>
+                        <textarea id="mensaje" rows="3" placeholder="Ej: Regala bienestar, calma y cuidado"></textarea>
+
+                        <label for="fechaVencimiento">Fecha de vencimiento opcional</label>
+                        <input type="date" id="fechaVencimiento">
+
+                        <button type="submit" class="btn btn-primary">
+                            Generar Gift Card
+                        </button>
+                    </form>
+
+                    <p id="giftcardMessage" class="admin-message"></p>
+                </div>
+
+                <div class="admin-section giftcard-list-section">
+                    <h2><i class="fas fa-list"></i> Gift Cards generadas</h2>
+
+                    <div id="giftcardsList" class="giftcards-list">
+                        <p>Cargando gift cards...</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+    <script type="module" src="giftcard-admin.js"></script>
+
+</body>
+
+</html>
