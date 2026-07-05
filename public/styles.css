@@ -2773,3 +2773,184 @@ section {
         font-size: 0.62rem;
     }
 }
+
+/* =========================================================
+   SERVICIOS RENOVADOS
+   ========================================================= */
+
+.servicios-renovados {
+    padding: 35px 0 90px;
+    background:
+        linear-gradient(rgba(255, 251, 247, 0.92), rgba(255, 251, 247, 0.96)),
+        var(--color-bg);
+}
+
+.servicios-header {
+    max-width: 1050px;
+    margin-bottom: 1.6rem;
+}
+
+.servicios-header h2 {
+    font-family: var(--font-title);
+    font-size: clamp(2.05rem, 4.3vw, 3.1rem);
+    font-weight: 500;
+    line-height: 1.22;
+    color: var(--color-text);
+}
+
+.section-divider {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.85rem;
+    margin: 1.6rem auto 1.2rem;
+    color: var(--color-primary);
+}
+
+.section-divider span {
+    width: 85px;
+    height: 1px;
+    background: rgba(184, 139, 106, 0.42);
+}
+
+.section-divider i {
+    font-size: 0.92rem;
+}
+
+.servicios-frase {
+    font-family: var(--font-title);
+    font-style: italic;
+    font-size: 1.6rem;
+    color: var(--color-primary-dark);
+}
+
+.servicios-grid-renovado {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1rem;
+}
+
+.servicio-card-renovado {
+    position: relative;
+    display: block;
+    min-height: 350px;
+    border-radius: 24px;
+    overflow: hidden;
+    background: var(--color-primary-dark);
+    box-shadow: var(--shadow-soft);
+    border: 1px solid rgba(255, 255, 255, 0.38);
+    transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+
+.servicio-card-renovado:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-hover);
+}
+
+.servicio-card-renovado img {
+    width: 100%;
+    height: 100%;
+    min-height: 350px;
+    object-fit: cover;
+    transition: transform 0.55s ease;
+}
+
+.servicio-card-renovado:hover img {
+    transform: scale(1.07);
+}
+
+.servicio-card-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    text-align: center;
+    padding: 1.4rem 1rem 1.25rem;
+    color: #ffffff;
+    background:
+        linear-gradient(180deg,
+            rgba(38, 23, 15, 0.04) 24%,
+            rgba(53, 29, 16, 0.84) 100%);
+}
+
+.servicio-card-overlay i {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    text-align: center;
+    padding: 1.8rem 1.1rem 1.6rem;
+}
+
+.servicio-card-overlay h3 {
+    font-family: var(--font-title);
+    font-size: 1.55rem;
+    line-height: 1.15;
+    margin-bottom: 0.65rem;
+    color: #ffffff;
+}
+
+.servicio-card-overlay p {
+    font-size: 0.93rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.92);
+    margin: 0;
+}
+
+@media (max-width: 1100px) {
+    .servicios-grid-renovado {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .servicios-renovados {
+        padding: 75px 0;
+    }
+
+    .servicios-grid-renovado {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.9rem;
+    }
+
+    .servicio-card-renovado {
+        min-height: 430px;
+    }
+
+    .servicio-card-renovado img {
+        width: 100%;
+        height: 430px;
+        min-height: 0;
+        object-fit: cover;
+        object-position: center center;
+    }
+
+    .servicios-frase {
+        font-size: 1.15rem;
+    }
+
+    .servicio-card-renovado {
+        min-height: 390px;
+    }
+
+    .servicio-card-renovado img {
+        height: 390px;
+        min-height: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .servicios-grid-renovado {
+        grid-template-columns: 1fr;
+    }
+
+    .servicio-card-renovado {
+        min-height: 430px;
+    }
+
+    .servicio-card-renovado img {
+        height: 430px;
+        min-height: 0;
+    }
+}
